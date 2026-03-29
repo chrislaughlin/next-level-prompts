@@ -157,6 +157,39 @@ function App() {
     [preview],
   )
 
+  const markdownComponents = useMemo(
+    () => ({
+      pre: (props: any) => (
+        <Box
+          component="pre"
+          sx={{
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+            overflowWrap: 'anywhere',
+            m: 0,
+          }}
+          {...props}
+        />
+      ),
+      code: ({ inline, className, children, ...props }: any) => (
+        <Box
+          component="code"
+          className={className}
+          sx={{
+            display: inline ? 'inline' : 'block',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+            overflowWrap: 'anywhere',
+          }}
+          {...props}
+        >
+          {children}
+        </Box>
+      ),
+    }),
+    [],
+  )
+
   const copyPrompt = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(promptText)
@@ -426,7 +459,10 @@ function App() {
                       overflow: 'auto',
                     }}
                   >
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={markdownComponents}
+                    >
                       {'```\n' + promptText + '\n```'}
                     </ReactMarkdown>
                   </Box>

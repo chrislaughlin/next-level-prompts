@@ -11,6 +11,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "trst": "vitest run",
+    "eval": "vitest run src/lib/promptEval.test.ts --reporter=dot",
     "lint": "eslint",
     "format": "prettier --check .",
     "check": "prettier --write . && eslint --fix"

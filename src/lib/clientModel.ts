@@ -86,7 +86,7 @@ async function buildGenerator(forceBackend?: 'webgpu' | 'wasm') {
   const pipe = (await pipeline('text-generation' as any, MODEL_ID, {
     device: backend,
     dtype: 'q4',
-    max_new_tokens: 80,
+    max_new_tokens: 120,
   })) as TextGenerationPipeline
   restoreLogs()
   return pipe
@@ -124,16 +124,27 @@ export async function isModelCached(): Promise<boolean> {
   return cachedCacheStatus
 }
 
-export async function generateClientText(prompt: string) {
+type GenerationHints = {
+  max_new_tokens?: number
+  temperature?: number
+  top_p?: number
+  top_k?: number
+  repetition_penalty?: number
+}
+
+export async function generateClientText(prompt: string, overrides?: GenerationHints) {
   if (typeof window === 'undefined')
     throw new Error('Client model unavailable on server')
   const generator = await (generatorPromise ?? prefetchModel())
   if (!generator) throw new Error('Model not ready')
 
   const result = await generator(prompt, {
-    max_new_tokens: 90,
-    temperature: 0.6,
-    top_p: 0.9,
+    max_new_tokens: 120,
+    temperature: 0.4,
+    top_p: 0.85,
+    top_k: 50,
+    repetition_penalty: 1.05,
+    ...(overrides ?? {}),
   })
 
   const text = Array.isArray(result) ? (result[0]?.generated_text ?? '') : ''

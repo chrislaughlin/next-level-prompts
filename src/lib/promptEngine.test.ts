@@ -9,9 +9,9 @@ describe('composePrompt', () => {
       multiPhasePreference: 'ask',
     })
 
-    expect(res.starter.toLowerCase()).toContain('we are doing')
+    expect(res.starter.toLowerCase()).toContain('objective:')
     expect(res.questions.length).toBeGreaterThan(2)
-    expect(res.fullPrompt).toContain('Starter:')
+    expect(res.fullPrompt).toContain('Objective:')
     expect(res.fullPrompt).toContain('Skills')
   })
 
