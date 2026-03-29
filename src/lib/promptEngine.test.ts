@@ -1,0 +1,22 @@
+import { describe, expect, it } from 'vitest'
+import { composePrompt } from './promptEngine'
+
+describe('composePrompt', () => {
+  it('generates structured sections', async () => {
+    const res = await composePrompt({
+      seed: 'Build a feature flag dashboard in React',
+      keywords: 'react flags',
+      multiPhasePreference: 'ask',
+    })
+
+    expect(res.starter.toLowerCase()).toContain('we are doing')
+    expect(res.questions.length).toBeGreaterThan(2)
+    expect(res.fullPrompt).toContain('Starter:')
+    expect(res.fullPrompt).toContain('Skills')
+  })
+
+  it('falls back when seed is empty-ish', async () => {
+    const res = await composePrompt({ seed: '   ', multiPhasePreference: 'skip' })
+    expect(res.fullPrompt.length).toBeGreaterThan(10)
+  })
+})

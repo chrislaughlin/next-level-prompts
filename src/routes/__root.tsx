@@ -6,13 +6,13 @@ import {
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import Footer from '../components/Footer'
-import Header from '../components/Header'
 
 import TanStackQueryProvider from '../integrations/tanstack-query/root-provider'
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 
 import appCss from '../styles.css?url'
+import { AppThemeProvider } from '../theme'
 
 import type { QueryClient } from '@tanstack/react-query'
 
@@ -41,6 +41,19 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         rel: 'stylesheet',
         href: appCss,
       },
+      {
+        rel: 'preconnect',
+        href: 'https://fonts.googleapis.com',
+      },
+      {
+        rel: 'preconnect',
+        href: 'https://fonts.gstatic.com',
+        crossOrigin: 'anonymous',
+      },
+      {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap',
+      },
     ],
   }),
   shellComponent: RootDocument,
@@ -53,24 +66,25 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <HeadContent />
       </head>
-      <body className="font-sans antialiased [overflow-wrap:anywhere] selection:bg-[rgba(79,184,178,0.24)]">
-        <TanStackQueryProvider>
-          <Header />
-          {children}
-          <Footer />
-          <TanStackDevtools
-            config={{
-              position: 'bottom-right',
-            }}
-            plugins={[
-              {
-                name: 'Tanstack Router',
-                render: <TanStackRouterDevtoolsPanel />,
-              },
-              TanStackQueryDevtools,
-            ]}
-          />
-        </TanStackQueryProvider>
+      <body className="font-sans antialiased [overflow-wrap:anywhere]" style={{ background: 'radial-gradient(circle at 10% 20%, rgba(255,107,129,0.08), transparent 25%), radial-gradient(circle at 90% 10%, rgba(255,184,108,0.08), transparent 20%), #0c0d16' }}>
+        <AppThemeProvider>
+          <TanStackQueryProvider>
+            {children}
+            <Footer />
+            <TanStackDevtools
+              config={{
+                position: 'bottom-right',
+              }}
+              plugins={[
+                {
+                  name: 'Tanstack Router',
+                  render: <TanStackRouterDevtoolsPanel />,
+                },
+                TanStackQueryDevtools,
+              ]}
+            />
+          </TanStackQueryProvider>
+        </AppThemeProvider>
         <Scripts />
       </body>
     </html>
