@@ -220,6 +220,7 @@ async function generateMiddleWithTransformers(seed: string): Promise<string | nu
   if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') {
     return null
   }
+  if (import.meta.env.SSR) return null
   // @ts-expect-error vite env guard
   if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_DISABLE_TRANSFORMERS === 'true') {
     return null

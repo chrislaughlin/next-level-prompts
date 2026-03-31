@@ -7,7 +7,6 @@ import {
   Chip,
   CircularProgress,
   Divider,
-  Grid,
   IconButton,
   LinearProgress,
   Paper,
@@ -38,20 +37,55 @@ import remarkGfm from 'remark-gfm'
 import { composePrompt } from '../lib/promptEngine'
 import type { PromptSections } from '../lib/promptEngine'
 import { findSkillsFromText } from '../services/skills'
-import {
-  forceRefetchModel,
-  getLastBackend,
-  isModelCached,
-  isWebGPUPreferred,
-  prefetchModel,
-} from '../lib/clientModel'
+
+let clientModelLoader: Promise<typeof import('../lib/clientModel')> | null = null
+
+async function loadClientModel() {
+  if (import.meta.env.SSR) return null
+  if (!clientModelLoader) {
+    clientModelLoader = import('../lib/clientModel')
+  }
+  return clientModelLoader
+}
 
 export const Route = createFileRoute('/')({ component: App })
 
-type BuildMode = 'app' | 'feature' | 'change' | 'bug'
-type BuildApproach = 'one-shot' | 'multi-phase'
+export type BuildMode = 'app' | 'feature' | 'change' | 'bug'
+export type BuildApproach = 'one-shot' | 'multi-phase'
 
-const STEPS = ['Mode', 'Approach', 'Keywords', 'Goal']
+export const STEPS = ['Mode', 'Approach', 'Keywords', 'Goal'] as const
+
+const BUILD_MODE_OPTIONS: Array<{
+  value: BuildMode
+  label: string
+  ariaLabel: string
+  icon: JSX.Element
+}> = [
+  {
+    value: 'app',
+    label: 'Full app',
+    ariaLabel: 'Full application',
+    icon: <AppsIcon fontSize="small" />,
+  },
+  {
+    value: 'feature',
+    label: 'Feature',
+    ariaLabel: 'Feature in app',
+    icon: <ExtensionIcon fontSize="small" />,
+  },
+  {
+    value: 'change',
+    label: 'Change',
+    ariaLabel: 'Change existing feature',
+    icon: <RepeatIcon fontSize="small" />,
+  },
+  {
+    value: 'bug',
+    label: 'Bug fix',
+    ariaLabel: 'Fix a bug',
+    icon: <BugReportIcon fontSize="small" />,
+  },
+]
 
 const PLACEHOLDER_IDEAS = [
   'Draft a launch email for a new open-source CLI tool',
@@ -130,6 +164,122 @@ const stepperSx = {
   },
 }
 
+export function WizardStepIndicator({
+  activeStep,
+  isMobile,
+}: {
+  activeStep: number
+  isMobile: boolean
+}) {
+  if (isMobile) {
+    return (
+      <Stack spacing={1.25}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Typography variant="overline" color="secondary">
+            Step {activeStep + 1} of {STEPS.length}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {STEPS[activeStep]}
+          </Typography>
+        </Stack>
+        <Stack direction="row" spacing={1} aria-label="Wizard steps">
+          {STEPS.map((label, index) => {
+            const isActive = index === activeStep
+            const isCompleted = index < activeStep
+
+            return (
+              <Box
+                key={label}
+                sx={{
+                  flex: 1,
+                  height: 8,
+                  borderRadius: 999,
+                  background: isActive
+                    ? 'linear-gradient(120deg, #ff6b81, #ffb86c)'
+                    : isCompleted
+                      ? alpha('#ffb86c', 0.9)
+                      : alpha('#ffffff', 0.16),
+                  transition: 'background 180ms ease',
+                }}
+              />
+            )
+          })}
+        </Stack>
+      </Stack>
+    )
+  }
+
+  return (
+    <Stepper activeStep={activeStep} alternativeLabel sx={stepperSx}>
+      {STEPS.map((label) => (
+        <Step key={label}>
+          <StepLabel>{label}</StepLabel>
+        </Step>
+      ))}
+    </Stepper>
+  )
+}
+
+export function BuildModeSelector({
+  value,
+  onChange,
+  isMobile,
+  theme,
+}: {
+  value: BuildMode
+  onChange: (_: React.MouseEvent<HTMLElement>, val: BuildMode | null) => void
+  isMobile: boolean
+  theme: ReturnType<typeof useTheme>
+}) {
+  return (
+    <ToggleButtonGroup
+      exclusive
+      value={value}
+      onChange={onChange}
+      fullWidth
+      color="primary"
+      aria-label="Build mode"
+      orientation={isMobile ? 'vertical' : 'horizontal'}
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))',
+        gap: 1,
+        backgroundColor: 'transparent',
+        border: 0,
+        '& .MuiToggleButtonGroup-grouped': {
+          margin: 0,
+          border: 0,
+          borderRadius: 3,
+        },
+        '& .MuiToggleButton-root': {
+          ...toggleButtonBaseSx(theme),
+          minHeight: isMobile ? 72 : 48,
+          px: isMobile ? 1.5 : 2,
+          py: isMobile ? 1.25 : 1,
+          justifyContent: 'center',
+          gap: 1,
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: 'center',
+          textAlign: 'center',
+          lineHeight: 1.2,
+          whiteSpace: 'normal',
+        },
+      }}
+    >
+      {BUILD_MODE_OPTIONS.map((option) => (
+        <ToggleButton
+          key={option.value}
+          value={option.value}
+          aria-label={option.ariaLabel}
+        >
+          {option.icon}
+          <Box component="span">{option.label}</Box>
+        </ToggleButton>
+      ))}
+    </ToggleButtonGroup>
+  )
+}
+
 function ChipInput({ values, onChange, label }: ChipInputProps) {
   const [text, setText] = useState('')
   const add = useCallback(() => {
@@ -200,6 +350,7 @@ function saveState(state: WizardState) {
 function App() {
   const theme = useTheme()
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'))
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
   const [wizard, setWizard] = useState<WizardState>(() => loadState())
   const [activeStep, setActiveStep] = useState(0)
@@ -229,14 +380,23 @@ function App() {
   useEffect(() => {
     let cancelled = false
     ;(async () => {
-      const cached = await isModelCached()
-      if (cancelled) return
-      setModelStatus(cached ? 'warming-cached' : 'warming')
-      await prefetchModel()
-      if (cancelled) return
-      setModelStatus('ready')
-      setBackend(getLastBackend())
-      setWebGpuPreferred(isWebGPUPreferred())
+      try {
+        const mod = await loadClientModel()
+        if (!mod || cancelled) return
+        const cached = await mod.isModelCached()
+        if (cancelled) return
+        setModelStatus(cached ? 'warming-cached' : 'warming')
+        await mod.prefetchModel()
+        if (cancelled) return
+        setModelStatus('ready')
+        setBackend(mod.getLastBackend())
+        setWebGpuPreferred(mod.isWebGPUPreferred())
+      } catch (err) {
+        if (!cancelled) {
+          console.error(err)
+          setModelStatus('error')
+        }
+      }
     })()
     return () => {
       cancelled = true
@@ -297,7 +457,6 @@ function App() {
           message: 'Prompt streamed successfully',
           severity: 'success',
         })
-        scrollToPreview()
       } catch (err: any) {
         setError(err?.message ?? 'Failed to generate prompt')
         setToast({
@@ -310,12 +469,13 @@ function App() {
         setIsStreaming(false)
       }
     },
-    [isDesktop, scrollToPreview],
+    [],
   )
 
   const regenerate = useCallback(() => {
+    scrollToPreview()
     void runCompose(wizard)
-  }, [runCompose, wizard])
+  }, [runCompose, scrollToPreview, wizard])
 
   const handleNext = useCallback(() => {
     setActiveStep((s) => Math.min(s + 1, STEPS.length - 1))
@@ -418,6 +578,7 @@ function App() {
         minHeight: 480,
         position: isDesktop ? 'sticky' : 'relative',
         top: isDesktop ? theme.spacing(2) : 'auto',
+        width: '100%',
       }}
     >
       <Stack
@@ -510,27 +671,12 @@ function App() {
         return (
           <Stack spacing={2}>
             <Typography variant="subtitle1">What are you building?</Typography>
-            <ToggleButtonGroup
-              exclusive
+            <BuildModeSelector
               value={wizard.buildMode}
               onChange={handleBuildModeChange}
-              fullWidth
-              color="primary"
-              sx={{ '& .MuiToggleButton-root': toggleButtonBaseSx(theme) }}
-            >
-              <ToggleButton value="app" aria-label="Full application">
-                <AppsIcon fontSize="small" />&nbsp;Full app
-              </ToggleButton>
-              <ToggleButton value="feature" aria-label="Feature in app">
-                <ExtensionIcon fontSize="small" />&nbsp;Feature
-              </ToggleButton>
-              <ToggleButton value="change" aria-label="Change existing feature">
-                <RepeatIcon fontSize="small" />&nbsp;Change
-              </ToggleButton>
-              <ToggleButton value="bug" aria-label="Fix a bug">
-                <BugReportIcon fontSize="small" />&nbsp;Bug fix
-              </ToggleButton>
-            </ToggleButtonGroup>
+              isMobile={isMobile}
+              theme={theme}
+            />
           </Stack>
         )
       case 1:
@@ -669,8 +815,10 @@ function App() {
             sx={{
               position: 'relative',
               zIndex: 1,
-              maxWidth: 1200,
-              mx: 'auto',
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
               px: { xs: 2.5, md: 4 },
             }}
           >
@@ -686,127 +834,77 @@ function App() {
               </Typography>
             </Stack>
 
-            <Grid container spacing={3} pb={6}>
-              <Grid item xs={12} md={12} lg={12}>
-                <Paper sx={{ p: 3, borderRadius: 3 }}>
-                  <Stack spacing={2}>
-                    <Stepper activeStep={activeStep} alternativeLabel sx={stepperSx}>
-                      {STEPS.map((label) => (
-                        <Step key={label}>
-                          <StepLabel>{label}</StepLabel>
-                        </Step>
-                      ))}
-                    </Stepper>
-                    {renderStepContent()}
-                    {error ? (
-                      <Typography color="error" variant="body2">
-                        {error}
-                      </Typography>
-                    ) : null}
+            <Stack
+              spacing={3}
+              pb={6}
+              alignItems="center"
+              width="100%"
+            >
+              <Paper
+                sx={{
+                  p: { xs: 2.25, sm: 3 },
+                  borderRadius: 3,
+                  width: 'min(960px, 100%)',
+                }}
+              >
+                <Stack spacing={2}>
+                  <WizardStepIndicator activeStep={activeStep} isMobile={isMobile} />
+                  {renderStepContent()}
+                  {error ? (
+                    <Typography color="error" variant="body2">
+                      {error}
+                    </Typography>
+                  ) : null}
+                  <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    alignItems={{ xs: 'stretch', sm: 'center' }}
+                    justifyContent="space-between"
+                    spacing={1.25}
+                  >
+                    <Button variant="text" onClick={handleReset} color="secondary">
+                      Reset
+                    </Button>
                     <Stack
-                      direction="row"
-                      alignItems="center"
-                      justifyContent="space-between"
+                      direction={{ xs: 'column', sm: 'row' }}
                       spacing={1}
+                      width={{ xs: '100%', sm: 'auto' }}
                     >
                       <Button
-                        variant="text"
-                        onClick={handleReset}
-                        color="secondary"
-                      >
-                        Reset
-                      </Button>
-                      <Stack direction="row" spacing={1}>
-                        <Button
-                          variant="outlined"
-                          onClick={handleBack}
-                          disabled={activeStep === 0}
-                        >
-                          Back
-                        </Button>
-                        <Button
-                          variant="contained"
-                          onClick={() => {
-                            if (activeStep === STEPS.length - 1) {
-                              regenerate()
-                            } else {
-                              handleNext()
-                            }
-                          }}
-                          disabled={!canProceed || loading}
-                        >
-                          {activeStep === STEPS.length - 1 ? 'Generate' : 'Next'}
-                        </Button>
-                      </Stack>
-                    </Stack>
-                    {!isDesktop && preview && (
-                      <Button variant="text" onClick={scrollToPreview}>
-                        Scroll to preview
-                      </Button>
-                    )}
-                  </Stack>
-                </Paper>
-                <Paper sx={{ p: 2, mt: 2, borderRadius: 3 }}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Chip size="small" label="Client WebGPU primary" color="secondary" />
-                    <Chip
-                      size="small"
-                      label={
-                        modelStatus === 'warming'
-                          ? 'Model: downloading'
-                          : modelStatus === 'warming-cached'
-                            ? 'Model: loading cache'
-                            : modelStatus === 'error'
-                              ? 'Model: error'
-                              : backend
-                                ? `Model: ${backend}`
-                                : 'Model: ready'
-                      }
-                      color={modelStatus === 'error' ? 'error' : 'default'}
-                    />
-                    <Chip
-                      size="small"
-                      label={
-                        webGpuPreferred === null
-                          ? 'Model pref: detecting'
-                          : webGpuPreferred
-                            ? 'WebGPU preferred'
-                            : 'WASM fallback'
-                      }
-                    />
-                  </Stack>
-                  <Typography variant="body2" color="text.secondary" mt={1.5}>
-                    Runs Transformers.js entirely in your browser (WebGPU with WASM fallback) to expand your idea. Keep this tab open while the model downloads.
-                  </Typography>
-                  {import.meta.env.DEV && (
-                    <Stack direction="row" spacing={1} mt={1.5}>
-                      <Button
-                        size="small"
                         variant="outlined"
-                        onClick={async () => {
-                          setModelStatus('warming')
-                          try {
-                            await forceRefetchModel()
-                            setBackend(getLastBackend())
-                            setModelStatus('ready')
-                          } catch (err: any) {
-                            setModelStatus('error')
-                            setError(err?.message ?? 'Failed to refetch model')
+                        onClick={handleBack}
+                        disabled={activeStep === 0}
+                        fullWidth={isMobile}
+                      >
+                        Back
+                      </Button>
+                      <Button
+                        variant="contained"
+                        onClick={() => {
+                          if (activeStep === STEPS.length - 1) {
+                            regenerate()
+                          } else {
+                            handleNext()
                           }
                         }}
-                        disabled={modelStatus === 'warming'}
+                        disabled={!canProceed || loading}
+                        fullWidth={isMobile}
                       >
-                        Refetch model (dev)
+                        {activeStep === STEPS.length - 1 ? 'Generate' : 'Next'}
                       </Button>
                     </Stack>
+                  </Stack>
+                  {!isDesktop && preview && (
+                    <Button variant="text" onClick={scrollToPreview}>
+                      Scroll to preview
+                    </Button>
                   )}
-                </Paper>
-              </Grid>
+                </Stack>
+              </Paper>
 
-              <Grid item xs={12} md={12} lg={12}>
+              <Box width="min(960px, 100%)">
                 {stickyPreview}
-              </Grid>
-            </Grid>
+              </Box>
+            </Stack>
           </Box>
         </Box>
       </Box>

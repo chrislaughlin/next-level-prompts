@@ -1,0 +1,1171 @@
+[     561ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:20102
+[     671ms] [WARNING] MUI Grid: The `item` prop has been removed and is no longer necessary. You can safely remove it.
+ @ http://localhost:3000/src/routes/__root.tsx:49
+[     671ms] [WARNING] MUI Grid: The `xs` prop has been removed. See https://mui.com/material-ui/migration/upgrade-to-grid-v2/ for migration instructions.
+ @ http://localhost:3000/src/routes/__root.tsx:49
+[     855ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] MUI Grid: The `item` prop has been removed and is no longer necessary. You can safely remove it.
+ @ http://localhost:3000/src/routes/__root.tsx:112
+[     855ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] MUI Grid: The `xs` prop has been removed. See https://mui.com/material-ui/migration/upgrade-to-grid-v2/ for migration instructions.
+ @ http://localhost:3000/src/routes/__root.tsx:112
+[  252554ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; @ http://localhost:3000/src/routes/__root.tsx:112
+[  252554ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:11 [vite] (client) hmr update /src/styles.css?direct, /src/routes/index.tsx, /src/routes/index.tsx?tsr-split=component @ http://localhost:3000/src/routes/__root.tsx:112
+[  252554ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; @ http://localhost:3000/src/routes/__root.tsx:112
+[  252554ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:11 [vite] (ssr) page reload src/routes/index.tsx @ http://localhost:3000/src/routes/__root.tsx:112
+[  252554ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [vite] program reload @ http://localhost:3000/src/routes/__root.tsx:112
+[  252649ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:12 [vite] (client) hmr invalidate /src/routes/index.tsx Could not Fast Refresh (new export) @ http://localhost:3000/src/routes/__root.tsx:112
+[  252649ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:12 [vite] (client) page reload src/routes/index.tsx @ http://localhost:3000/src/routes/__root.tsx:112
+[  252649ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:12 [vite] (client) hmr invalidate /src/routes/index.tsx Could not Fast Refresh (new export) @ http://localhost:3000/src/routes/__root.tsx:112
+[  252649ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:12 [vite] (client) page reload src/routes/index.tsx @ http://localhost:3000/src/routes/__root.tsx:112
+[  252669ms] [ERROR] %o
+
+%s
+
+%s
+ ReferenceError: Grid is not defined
+    at App (http://localhost:3000/src/routes/index.tsx?t=1775000111550&tsr-split=component:894:32)
+    at Object.react_stack_bottom_frame (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:18509:20)
+    at renderWithHooks (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:5654:24)
+    at updateFunctionComponent (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:7475:21)
+    at beginWork (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:8525:20)
+    at runWithFiberInDEV (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:997:72)
+    at performUnitOfWork (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:12561:98)
+    at workLoopSync (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:12424:43)
+    at renderRootSync (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:12408:13)
+    at performWorkOnRoot (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:11827:37) The above error occurred in the <App> component. React will try to recreate this component tree from scratch using the error boundary you provided, CatchBoundaryImpl. @ http://localhost:3000/src/routes/__root.tsx:49
+[  252670ms] [WARNING] Warning: The following error wasn't caught by any route! At the very least, consider setting an 'errorComponent' in your RootRoute! @ http://localhost:3000/src/routes/__root.tsx:49
+[  252670ms] [WARNING] Warning: Grid is not defined @ http://localhost:3000/src/routes/__root.tsx:49
+[  252672ms] [ERROR] %o
+
+%s
+
+%s
+ NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
+    at removeChild (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:15918:24)
+    at runWithFiberInDEV (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:997:72)
+    at commitDeletionEffectsOnFiber (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:10190:19)
+    at recursivelyTraverseDeletionEffects (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:10115:11)
+    at commitDeletionEffectsOnFiber (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:10237:13)
+    at recursivelyTraverseDeletionEffects (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:10115:11)
+    at commitDeletionEffectsOnFiber (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:10237:13)
+    at recursivelyTraverseDeletionEffects (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:10115:11)
+    at commitDeletionEffectsOnFiber (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:10146:13)
+    at recursivelyTraverseDeletionEffects (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:10115:11) The above error occurred in the <link> component. React will try to recreate this component tree from scratch using the error boundary you provided, CatchBoundaryImpl. @ http://localhost:3000/src/routes/__root.tsx:49
+[  252672ms] [WARNING] Warning: The following error wasn't caught by any route! At the very least, consider setting an 'errorComponent' in your RootRoute! @ http://localhost:3000/src/routes/__root.tsx:49
+[  252672ms] [WARNING] Warning: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node. @ http://localhost:3000/src/routes/__root.tsx:49
+[  252785ms] [ERROR] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] %o
+
+%s
+
+%s
+ {} The above error occurred in the <App> component. React will try to recreate this component tree from scratch using the error boundary you provided, CatchBoundaryImpl. @ http://localhost:3000/src/routes/__root.tsx:112
+[  252785ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] Warning: The following error wasn't caught by any route! At the very least, consider setting an 'errorComponent' in your RootRoute! @ http://localhost:3000/src/routes/__root.tsx:112
+[  252785ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] Warning: Grid is not defined @ http://localhost:3000/src/routes/__root.tsx:112
+[  252785ms] [ERROR] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] %o
+
+%s
+
+%s
+ {} The above error occurred in the <link> component. React will try to recreate this component tree from scratch using the error boundary you provided, CatchBoundaryImpl. @ http://localhost:3000/src/routes/__root.tsx:112
+[  252785ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] Warning: The following error wasn't caught by any route! At the very least, consider setting an 'errorComponent' in your RootRoute! @ http://localhost:3000/src/routes/__root.tsx:112
+[  252785ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] Warning: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node. @ http://localhost:3000/src/routes/__root.tsx:112
+[  252790ms] [ERROR] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] %o
+
+%s
+
+%s
+ {} The above error occurred in the <App> component. React will try to recreate this component tree from scratch using the error boundary you provided, CatchBoundaryImpl. @ http://localhost:3000/src/routes/__root.tsx:112
+[  252790ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] Warning: The following error wasn't caught by any route! At the very least, consider setting an 'errorComponent' in your RootRoute! @ http://localhost:3000/src/routes/__root.tsx:112
+[  252790ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] Warning: Grid is not defined @ http://localhost:3000/src/routes/__root.tsx:112
+[  252790ms] [ERROR] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] %o
+
+%s
+
+%s
+ {} The above error occurred in the <link> component. React will try to recreate this component tree from scratch using the error boundary you provided, CatchBoundaryImpl. @ http://localhost:3000/src/routes/__root.tsx:112
+[  252790ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] Warning: The following error wasn't caught by any route! At the very least, consider setting an 'errorComponent' in your RootRoute! @ http://localhost:3000/src/routes/__root.tsx:112
+[  252790ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] Warning: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node. @ http://localhost:3000/src/routes/__root.tsx:112
+[  253308ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:20102
+[  253575ms] [ERROR] %o
+
+%s
+
+%s
+ ReferenceError: Grid is not defined
+    at App (http://localhost:3000/src/routes/index.tsx?t=1775000111550&tsr-split=component:894:32)
+    at Object.react_stack_bottom_frame (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:18509:20)
+    at renderWithHooks (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:5654:24)
+    at updateFunctionComponent (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:7475:21)
+    at beginWork (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:8525:20)
+    at runWithFiberInDEV (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:997:72)
+    at performUnitOfWork (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:12561:98)
+    at workLoopSync (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:12424:43)
+    at renderRootSync (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:12408:13)
+    at performWorkOnRoot (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:11827:37) The above error occurred in the <App> component. React will try to recreate this component tree from scratch using the error boundary you provided, CatchBoundaryImpl. @ http://localhost:3000/src/routes/__root.tsx:49
+[  253575ms] [WARNING] Warning: The following error wasn't caught by any route! At the very least, consider setting an 'errorComponent' in your RootRoute! @ http://localhost:3000/src/routes/__root.tsx:49
+[  253575ms] [WARNING] Warning: Grid is not defined @ http://localhost:3000/src/routes/__root.tsx:49
+[  253731ms] [ERROR] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] %o
+
+%s
+
+%s
+ {} The above error occurred in the <App> component. React will try to recreate this component tree from scratch using the error boundary you provided, CatchBoundaryImpl. @ http://localhost:3000/src/routes/__root.tsx:112
+[  253731ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] Warning: The following error wasn't caught by any route! At the very least, consider setting an 'errorComponent' in your RootRoute! @ http://localhost:3000/src/routes/__root.tsx:112
+[  253731ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] Warning: Grid is not defined @ http://localhost:3000/src/routes/__root.tsx:112
+[  253990ms] [ERROR] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] %o
+
+%s
+
+%s
+ {} The above error occurred in the <App> component. React will try to recreate this component tree from scratch using the error boundary you provided, CatchBoundaryImpl. @ http://localhost:3000/src/routes/__root.tsx:112
+[  253991ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] Warning: The following error wasn't caught by any route! At the very least, consider setting an 'errorComponent' in your RootRoute! @ http://localhost:3000/src/routes/__root.tsx:112
+[  253991ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] Warning: Grid is not defined @ http://localhost:3000/src/routes/__root.tsx:112
+[  283477ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; @ http://localhost:3000/src/routes/__root.tsx:112
+[  283477ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:42 [vite] (client) hmr update /src/styles.css?direct, /src/routes/index.tsx, /src/routes/index.tsx?tsr-split=component @ http://localhost:3000/src/routes/__root.tsx:112
+[  283477ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; @ http://localhost:3000/src/routes/__root.tsx:112
+[  283477ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:42 [vite] (ssr) page reload src/routes/index.tsx @ http://localhost:3000/src/routes/__root.tsx:112
+[  283477ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [vite] program reload @ http://localhost:3000/src/routes/__root.tsx:112
+[  283494ms] [ERROR] %o
+
+%s
+
+%s
+ ReferenceError: Grid is not defined
+    at App (http://localhost:3000/src/routes/index.tsx?t=1775000111550&tsr-split=component:894:32)
+    at Object.react_stack_bottom_frame (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:18509:20)
+    at renderWithHooks (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:5654:24)
+    at updateFunctionComponent (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:7475:21)
+    at beginWork (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:8525:20)
+    at runWithFiberInDEV (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:997:72)
+    at performUnitOfWork (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:12561:98)
+    at workLoopSync (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:12424:43)
+    at renderRootSync (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:12408:13)
+    at performWorkOnRoot (http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:11827:37) The above error occurred in the <App> component. React will try to recreate this component tree from scratch using the error boundary you provided, CatchBoundaryImpl. @ http://localhost:3000/src/routes/__root.tsx:49
+[  283494ms] [WARNING] Warning: The following error wasn't caught by any route! At the very least, consider setting an 'errorComponent' in your RootRoute! @ http://localhost:3000/src/routes/__root.tsx:49
+[  283494ms] [WARNING] Warning: Grid is not defined @ http://localhost:3000/src/routes/__root.tsx:49
+[  283537ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:42 [vite] (client) hmr invalidate /src/routes/index.tsx Could not Fast Refresh ("STEPS" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports @ http://localhost:3000/src/routes/__root.tsx:112
+[  283537ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:42 [vite] (client) page reload src/routes/index.tsx @ http://localhost:3000/src/routes/__root.tsx:112
+[  283537ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:42 [vite] (client) hmr invalidate /src/routes/index.tsx Could not Fast Refresh ("STEPS" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports @ http://localhost:3000/src/routes/__root.tsx:112
+[  283537ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:42 [vite] (client) page reload src/routes/index.tsx @ http://localhost:3000/src/routes/__root.tsx:112
+[  283537ms] [ERROR] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] %o
+
+%s
+
+%s
+ {} The above error occurred in the <App> component. React will try to recreate this component tree from scratch using the error boundary you provided, CatchBoundaryImpl. @ http://localhost:3000/src/routes/__root.tsx:112
+[  283537ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] Warning: The following error wasn't caught by any route! At the very least, consider setting an 'errorComponent' in your RootRoute! @ http://localhost:3000/src/routes/__root.tsx:112
+[  283537ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] Warning: Grid is not defined @ http://localhost:3000/src/routes/__root.tsx:112
+[  283657ms] [ERROR] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] %o
+
+%s
+
+%s
+ {} The above error occurred in the <App> component. React will try to recreate this component tree from scratch using the error boundary you provided, CatchBoundaryImpl. @ http://localhost:3000/src/routes/__root.tsx:112
+[  283657ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] Warning: The following error wasn't caught by any route! At the very least, consider setting an 'errorComponent' in your RootRoute! @ http://localhost:3000/src/routes/__root.tsx:112
+[  283657ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] Warning: Grid is not defined @ http://localhost:3000/src/routes/__root.tsx:112
+[  284103ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:20102
+[  284134ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; Warning: A notFoundError was encountered on the route with ID "__root__", but a notFoundComponent option was not configured, nor was a router level defaultNotFoundComponent configured. Consider configuring at least one of these to avoid TanStack Router's overly generic defaultNotFoundComponent (<p>Not Found</p>) @ http://localhost:3000/src/routes/__root.tsx:112
+[  284353ms] [ERROR] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <MuiStack-root as="div" ownerState={{...}} ref={null} className="MuiStack-root" data-tsd-source="/src/route..." ...>
+      <Insertion6>
+      <div className="MuiStack-r..." data-tsd-source="/src/route...">
+        <WizardStepIndicator>
+        <Grid2 spacing={2} data-tsd-source="/src/route...">
+          <MuiStack-root as="div" ownerState={{...}} ref={null} className="MuiStack-root" data-tsd-source="/src/route..." ...>
+            <Insertion6>
+            <div className="MuiStack-r..." data-tsd-source="/src/route...">
+              <Typography2>
+              <BuildModeSelector value="bug" onChange={function} isMobile={false} theme={{...}} ...>
+                <ToggleButtonGroup2 exclusive={true} value="bug" onChange={function} fullWidth={true} color="primary" ...>
+                  <MuiToggleButtonGroup-root role="group" className="MuiToggleB..." ref={null} ...>
+                    <Insertion6>
+                    <div role="group" className="MuiToggleB..." aria-label="Build mode" data-tsd-source="/src/route...">
+                      <ToggleButton2>
+                      <ToggleButton2 value="feature" aria-label="Feature in..." data-tsd-source="/src/route...">
+                        <MuiToggleButton-root className="MuiToggleB..." disabled={false} focusRipple={true} ref={null} ...>
+                          <Insertion6>
+                          <ButtonBase2 className="MuiToggleB..." disabled={false} focusRipple={true} ...>
+                            <MuiButtonBase-root as="button" className="MuiButtonB..." ownerState={{...}} ...>
+                              <Insertion6>
+                              <button
++                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+-                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+                                onBlur={function}
+                                onClick={function handleChange}
+                                onContextMenu={function}
+                                onFocus={function}
+                                onKeyDown={function}
+                                onKeyUp={function}
+                                onMouseDown={function}
+                                onMouseLeave={function}
+                                onMouseUp={function}
+                                onDragLeave={function}
+                                onTouchEnd={function}
+                                onTouchMove={function}
+                                onTouchStart={function}
+                                tabIndex={0}
+                                type="button"
+                                disabled={false}
+                                onChange={function}
+                                value="feature"
++                               aria-pressed={false}
+-                               aria-pressed="true"
+                                aria-label="Feature in app"
+                                data-tsd-source="/src/routes/index.tsx:270:9"
+                                ref={function}
+                              >
+                      <ToggleButton2>
+                      <ToggleButton2 value="bug" aria-label="Fix a bug" data-tsd-source="/src/route...">
+                        <MuiToggleButton-root className="MuiToggleB..." disabled={false} focusRipple={true} ref={null} ...>
+                          <Insertion6>
+                          <ButtonBase2 className="MuiToggleB..." disabled={false} focusRipple={true} ...>
+                            <MuiButtonBase-root as="button" className="MuiButtonB..." ownerState={{...}} ...>
+                              <Insertion6>
+                              <button
++                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+-                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+                                onBlur={function}
+                                onClick={function handleChange}
+                                onContextMenu={function}
+                                onFocus={function}
+                                onKeyDown={function}
+                                onKeyUp={function}
+                                onMouseDown={function}
+                                onMouseLeave={function}
+                                onMouseUp={function}
+                                onDragLeave={function}
+                                onTouchEnd={function}
+                                onTouchMove={function}
+                                onTouchStart={function}
+                                tabIndex={0}
+                                type="button"
+                                disabled={false}
+                                onChange={function}
+                                value="bug"
++                               aria-pressed={true}
+-                               aria-pressed="false"
+                                aria-label="Fix a bug"
+                                data-tsd-source="/src/routes/index.tsx:270:9"
+                                ref={function}
+                              >
+        ...
+ @ http://localhost:3000/src/routes/__root.tsx:49
+[  284535ms] [ERROR] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <MuiStack-root as="div" ownerState={{...}} ref={null} className="MuiStack-root" data-tsd-source="/src/route..." ...>
+      <Insertion6>
+      <div className="MuiStack-r..." data-tsd-source="/src/route...">
+        <WizardStepIndicator>
+        <Grid2 spacing={2} data-tsd-source="/src/route...">
+          <MuiStack-root as="div" ownerState={{...}} ref={null} className="MuiStack-root" data-tsd-source="/src/route..." ...>
+            <Insertion6>
+            <div className="MuiStack-r..." data-tsd-source="/src/route...">
+              <Typography2>
+              <BuildModeSelector value="bug" onChange={function} isMobile={false} theme={{...}} ...>
+                <ToggleButtonGroup2 exclusive={true} value="bug" onChange={function} fullWidth={true} color="primary" ...>
+                  <MuiToggleButtonGroup-root role="group" className="MuiToggleB..." ref={null} ...>
+                    <Insertion6>
+                    <div role="group" className="MuiToggleB..." aria-label="Build mode" data-tsd-source="/src/route...">
+                      <ToggleButton2>
+                      <ToggleButton2 value="feature" aria-label="Feature in..." data-tsd-source="/src/route...">
+                        <MuiToggleButton-root className="MuiToggleB..." disabled={false} focusRipple={true} ref={null} ...>
+                          <Insertion6>
+                          <ButtonBase2 className="MuiToggleB..." disabled={false} focusRipple={true} ...>
+                            <MuiButtonBase-root as="button" className="MuiButtonB..." ownerState={{...}} ...>
+                              <Insertion6>
+                              <button
++                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+-                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+                                onBlur={function}
+                                onClick={function handleChange}
+                                onContextMenu={function}
+                                onFocus={function}
+                                onKeyDown={function}
+                                onKeyUp={function}
+                                onMouseDown={function}
+                                onMouseLeave={function}
+                                onMouseUp={function}
+                                onDragLeave={function}
+                                onTouchEnd={function}
+                                onTouchMove={function}
+                                onTouchStart={function}
+                                tabIndex={0}
+                                type="button"
+                                disabled={false}
+                                onChange={function}
+                                value="feature"
++                               aria-pressed={false}
+-                               aria-pressed="true"
+                                aria-label="Feature in app"
+                                data-tsd-source="http://localhost:3000/__tsd/open-source?source=%2Fsrc%2Froutes%2Findex.tsx%3A270%3A9"
+                                ref={function}
+                              >
+                      <ToggleButton2>
+                      <ToggleButton2 value="bug" aria-label="Fix a bug" data-tsd-source="/src/route...">
+                        <MuiToggleButton-root className="MuiToggleB..." disabled={false} focusRipple={true} ref={null} ...>
+                          <Insertion6>
+                          <ButtonBase2 className="MuiToggleB..." disabled={false} focusRipple={true} ...>
+                            <MuiButtonBase-root as="button" className="MuiButtonB..." ownerState={{...}} ...>
+                              <Insertion6>
+                              <button
++                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+-                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+                                onBlur={function}
+                                onClick={function handleChange}
+                                onContextMenu={function}
+                                onFocus={function}
+                                onKeyDown={function}
+                                onKeyUp={function}
+                                onMouseDown={function}
+                                onMouseLeave={function}
+                                onMouseUp={function}
+                                onDragLeave={function}
+                                onTouchEnd={function}
+                                onTouchMove={function}
+                                onTouchStart={function}
+                                tabIndex={0}
+                                type="button"
+                                disabled={false}
+                                onChange={function}
+                                value="bug"
++                               aria-pressed={true}
+-                               aria-pressed="false"
+                                aria-label="Fix a bug"
+                                data-tsd-source="http://localhost:3000/__tsd/open-source?source=%2Fsrc%2Froutes%2Findex.tsx%3A270%3A9"
+                                ref={function}
+                              >
+        ...
+ @ http://localhost:3000/src/routes/__root.tsx:112
+[  286091ms] [ERROR] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <MuiStack-root as="div" ownerState={{...}} ref={null} className="MuiStack-root" data-tsd-source="/src/route..." ...>
+      <Insertion6>
+      <div className="MuiStack-r..." data-tsd-source="/src/route...">
+        <WizardStepIndicator>
+        <Grid2 spacing={2} data-tsd-source="/src/route...">
+          <MuiStack-root as="div" ownerState={{...}} ref={null} className="MuiStack-root" data-tsd-source="/src/route..." ...>
+            <Insertion6>
+            <div className="MuiStack-r..." data-tsd-source="/src/route...">
+              <Typography2>
+              <BuildModeSelector value="change" onChange={function} isMobile={false} theme={{...}} ...>
+                <ToggleButtonGroup2 exclusive={true} value="change" onChange={function} fullWidth={true} color="primary" ...>
+                  <MuiToggleButtonGroup-root role="group" className="MuiToggleB..." ref={null} ...>
+                    <Insertion6>
+                    <div role="group" className="MuiToggleB..." aria-label="Build mode" data-tsd-source="/src/route...">
+                      <ToggleButton2>
+                      <ToggleButton2 value="feature" aria-label="Feature in..." data-tsd-source="/src/route...">
+                        <MuiToggleButton-root className="MuiToggleB..." disabled={false} focusRipple={true} ref={null} ...>
+                          <Insertion6>
+                          <ButtonBase2 className="MuiToggleB..." disabled={false} focusRipple={true} ...>
+                            <MuiButtonBase-root as="button" className="MuiButtonB..." ownerState={{...}} ...>
+                              <Insertion6>
+                              <button
++                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+-                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+                                onBlur={function}
+                                onClick={function handleChange}
+                                onContextMenu={function}
+                                onFocus={function}
+                                onKeyDown={function}
+                                onKeyUp={function}
+                                onMouseDown={function}
+                                onMouseLeave={function}
+                                onMouseUp={function}
+                                onDragLeave={function}
+                                onTouchEnd={function}
+                                onTouchMove={function}
+                                onTouchStart={function}
+                                tabIndex={0}
+                                type="button"
+                                disabled={false}
+                                onChange={function}
+                                value="feature"
++                               aria-pressed={false}
+-                               aria-pressed="true"
+                                aria-label="Feature in app"
+                                data-tsd-source="http://localhost:3000/__tsd/open-source?source=%2Fsrc%2Froutes%2Findex.tsx%3A270%3A9"
+                                ref={function}
+                              >
+                      <ToggleButton2 value="change" aria-label="Change exi..." data-tsd-source="/src/route...">
+                        <MuiToggleButton-root className="MuiToggleB..." disabled={false} focusRipple={true} ref={null} ...>
+                          <Insertion6>
+                          <ButtonBase2 className="MuiToggleB..." disabled={false} focusRipple={true} ...>
+                            <MuiButtonBase-root as="button" className="MuiButtonB..." ownerState={{...}} ...>
+                              <Insertion6>
+                              <button
++                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+-                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+                                onBlur={function}
+                                onClick={function handleChange}
+                                onContextMenu={function}
+                                onFocus={function}
+                                onKeyDown={function}
+                                onKeyUp={function}
+                                onMouseDown={function}
+                                onMouseLeave={function}
+                                onMouseUp={function}
+                                onDragLeave={function}
+                                onTouchEnd={function}
+                                onTouchMove={function}
+                                onTouchStart={function}
+                                tabIndex={0}
+                                type="button"
+                                disabled={false}
+                                onChange={function}
+                                value="change"
++                               aria-pressed={true}
+-                               aria-pressed="false"
+                                aria-label="Change existing feature"
+                                data-tsd-source="http://localhost:3000/__tsd/open-source?source=%2Fsrc%2Froutes%2Findex.tsx%3A270%3A9"
+                                ref={function}
+                              >
+                      ...
+        ...
+ @ http://localhost:3000/src/routes/__root.tsx:112
+[  287980ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; @ http://localhost:3000/src/routes/__root.tsx:112
+[  287980ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:47 [vite] (client) hmr update /src/styles.css?direct, /src/routes/index.tsx, /src/routes/index.tsx?tsr-split=component @ http://localhost:3000/src/routes/__root.tsx:112
+[  287980ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; @ http://localhost:3000/src/routes/__root.tsx:112
+[  287980ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:47 [vite] (ssr) page reload src/routes/index.tsx @ http://localhost:3000/src/routes/__root.tsx:112
+[  287980ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [vite] program reload @ http://localhost:3000/src/routes/__root.tsx:112
+[  288110ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:47 [vite] (client) hmr invalidate /src/routes/index.tsx Could not Fast Refresh ("STEPS" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports @ http://localhost:3000/src/routes/__root.tsx:112
+[  288110ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:47 [vite] (client) page reload src/routes/index.tsx @ http://localhost:3000/src/routes/__root.tsx:112
+[  288110ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:47 [vite] (client) hmr invalidate /src/routes/index.tsx Could not Fast Refresh ("STEPS" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports @ http://localhost:3000/src/routes/__root.tsx:112
+[  288110ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:47 [vite] (client) page reload src/routes/index.tsx @ http://localhost:3000/src/routes/__root.tsx:112
+[  288869ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:20102
+[  289077ms] [ERROR] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <MuiStack-root as="div" ownerState={{...}} ref={null} className="MuiStack-root" data-tsd-source="/src/route..." ...>
+      <Insertion6>
+      <div className="MuiStack-r..." data-tsd-source="/src/route...">
+        <WizardStepIndicator>
+        <Grid2 spacing={2} data-tsd-source="/src/route...">
+          <MuiStack-root as="div" ownerState={{...}} ref={null} className="MuiStack-root" data-tsd-source="/src/route..." ...>
+            <Insertion6>
+            <div className="MuiStack-r..." data-tsd-source="/src/route...">
+              <Typography2>
+              <BuildModeSelector value="bug" onChange={function} isMobile={false} theme={{...}} ...>
+                <ToggleButtonGroup2 exclusive={true} value="bug" onChange={function} fullWidth={true} color="primary" ...>
+                  <MuiToggleButtonGroup-root role="group" className="MuiToggleB..." ref={null} ...>
+                    <Insertion6>
+                    <div role="group" className="MuiToggleB..." aria-label="Build mode" data-tsd-source="/src/route...">
+                      <ToggleButton2>
+                      <ToggleButton2 value="feature" aria-label="Feature in..." data-tsd-source="/src/route...">
+                        <MuiToggleButton-root className="MuiToggleB..." disabled={false} focusRipple={true} ref={null} ...>
+                          <Insertion6>
+                          <ButtonBase2 className="MuiToggleB..." disabled={false} focusRipple={true} ...>
+                            <MuiButtonBase-root as="button" className="MuiButtonB..." ownerState={{...}} ...>
+                              <Insertion6>
+                              <button
++                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+-                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+                                onBlur={function}
+                                onClick={function handleChange}
+                                onContextMenu={function}
+                                onFocus={function}
+                                onKeyDown={function}
+                                onKeyUp={function}
+                                onMouseDown={function}
+                                onMouseLeave={function}
+                                onMouseUp={function}
+                                onDragLeave={function}
+                                onTouchEnd={function}
+                                onTouchMove={function}
+                                onTouchStart={function}
+                                tabIndex={0}
+                                type="button"
+                                disabled={false}
+                                onChange={function}
+                                value="feature"
++                               aria-pressed={false}
+-                               aria-pressed="true"
+                                aria-label="Feature in app"
+                                data-tsd-source="/src/routes/index.tsx:270:9"
+                                ref={function}
+                              >
+                      <ToggleButton2>
+                      <ToggleButton2 value="bug" aria-label="Fix a bug" data-tsd-source="/src/route...">
+                        <MuiToggleButton-root className="MuiToggleB..." disabled={false} focusRipple={true} ref={null} ...>
+                          <Insertion6>
+                          <ButtonBase2 className="MuiToggleB..." disabled={false} focusRipple={true} ...>
+                            <MuiButtonBase-root as="button" className="MuiButtonB..." ownerState={{...}} ...>
+                              <Insertion6>
+                              <button
++                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+-                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+                                onBlur={function}
+                                onClick={function handleChange}
+                                onContextMenu={function}
+                                onFocus={function}
+                                onKeyDown={function}
+                                onKeyUp={function}
+                                onMouseDown={function}
+                                onMouseLeave={function}
+                                onMouseUp={function}
+                                onDragLeave={function}
+                                onTouchEnd={function}
+                                onTouchMove={function}
+                                onTouchStart={function}
+                                tabIndex={0}
+                                type="button"
+                                disabled={false}
+                                onChange={function}
+                                value="bug"
++                               aria-pressed={true}
+-                               aria-pressed="false"
+                                aria-label="Fix a bug"
+                                data-tsd-source="/src/routes/index.tsx:270:9"
+                                ref={function}
+                              >
+        ...
+ @ http://localhost:3000/src/routes/__root.tsx:49
+[  289279ms] [ERROR] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <MuiStack-root as="div" ownerState={{...}} ref={null} className="MuiStack-root" data-tsd-source="/src/route..." ...>
+      <Insertion6>
+      <div className="MuiStack-r..." data-tsd-source="/src/route...">
+        <WizardStepIndicator>
+        <Grid2 spacing={2} data-tsd-source="/src/route...">
+          <MuiStack-root as="div" ownerState={{...}} ref={null} className="MuiStack-root" data-tsd-source="/src/route..." ...>
+            <Insertion6>
+            <div className="MuiStack-r..." data-tsd-source="/src/route...">
+              <Typography2>
+              <BuildModeSelector value="bug" onChange={function} isMobile={false} theme={{...}} ...>
+                <ToggleButtonGroup2 exclusive={true} value="bug" onChange={function} fullWidth={true} color="primary" ...>
+                  <MuiToggleButtonGroup-root role="group" className="MuiToggleB..." ref={null} ...>
+                    <Insertion6>
+                    <div role="group" className="MuiToggleB..." aria-label="Build mode" data-tsd-source="/src/route...">
+                      <ToggleButton2>
+                      <ToggleButton2 value="feature" aria-label="Feature in..." data-tsd-source="/src/route...">
+                        <MuiToggleButton-root className="MuiToggleB..." disabled={false} focusRipple={true} ref={null} ...>
+                          <Insertion6>
+                          <ButtonBase2 className="MuiToggleB..." disabled={false} focusRipple={true} ...>
+                            <MuiButtonBase-root as="button" className="MuiButtonB..." ownerState={{...}} ...>
+                              <Insertion6>
+                              <button
++                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+-                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+                                onBlur={function}
+                                onClick={function handleChange}
+                                onContextMenu={function}
+                                onFocus={function}
+                                onKeyDown={function}
+                                onKeyUp={function}
+                                onMouseDown={function}
+                                onMouseLeave={function}
+                                onMouseUp={function}
+                                onDragLeave={function}
+                                onTouchEnd={function}
+                                onTouchMove={function}
+                                onTouchStart={function}
+                                tabIndex={0}
+                                type="button"
+                                disabled={false}
+                                onChange={function}
+                                value="feature"
++                               aria-pressed={false}
+-                               aria-pressed="true"
+                                aria-label="Feature in app"
+                                data-tsd-source="http://localhost:3000/__tsd/open-source?source=%2Fsrc%2Froutes%2Findex.tsx%3A270%3A9"
+                                ref={function}
+                              >
+                      <ToggleButton2>
+                      <ToggleButton2 value="bug" aria-label="Fix a bug" data-tsd-source="/src/route...">
+                        <MuiToggleButton-root className="MuiToggleB..." disabled={false} focusRipple={true} ref={null} ...>
+                          <Insertion6>
+                          <ButtonBase2 className="MuiToggleB..." disabled={false} focusRipple={true} ...>
+                            <MuiButtonBase-root as="button" className="MuiButtonB..." ownerState={{...}} ...>
+                              <Insertion6>
+                              <button
++                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+-                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+                                onBlur={function}
+                                onClick={function handleChange}
+                                onContextMenu={function}
+                                onFocus={function}
+                                onKeyDown={function}
+                                onKeyUp={function}
+                                onMouseDown={function}
+                                onMouseLeave={function}
+                                onMouseUp={function}
+                                onDragLeave={function}
+                                onTouchEnd={function}
+                                onTouchMove={function}
+                                onTouchStart={function}
+                                tabIndex={0}
+                                type="button"
+                                disabled={false}
+                                onChange={function}
+                                value="bug"
++                               aria-pressed={true}
+-                               aria-pressed="false"
+                                aria-label="Fix a bug"
+                                data-tsd-source="http://localhost:3000/__tsd/open-source?source=%2Fsrc%2Froutes%2Findex.tsx%3A270%3A9"
+                                ref={function}
+                              >
+        ...
+ @ http://localhost:3000/src/routes/__root.tsx:112
+[  290544ms] [ERROR] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <MuiStack-root as="div" ownerState={{...}} ref={null} className="MuiStack-root" data-tsd-source="/src/route..." ...>
+      <Insertion6>
+      <div className="MuiStack-r..." data-tsd-source="/src/route...">
+        <WizardStepIndicator>
+        <Grid2 spacing={2} data-tsd-source="/src/route...">
+          <MuiStack-root as="div" ownerState={{...}} ref={null} className="MuiStack-root" data-tsd-source="/src/route..." ...>
+            <Insertion6>
+            <div className="MuiStack-r..." data-tsd-source="/src/route...">
+              <Typography2>
+              <BuildModeSelector value="change" onChange={function} isMobile={false} theme={{...}} ...>
+                <ToggleButtonGroup2 exclusive={true} value="change" onChange={function} fullWidth={true} color="primary" ...>
+                  <MuiToggleButtonGroup-root role="group" className="MuiToggleB..." ref={null} ...>
+                    <Insertion6>
+                    <div role="group" className="MuiToggleB..." aria-label="Build mode" data-tsd-source="/src/route...">
+                      <ToggleButton2>
+                      <ToggleButton2 value="feature" aria-label="Feature in..." data-tsd-source="/src/route...">
+                        <MuiToggleButton-root className="MuiToggleB..." disabled={false} focusRipple={true} ref={null} ...>
+                          <Insertion6>
+                          <ButtonBase2 className="MuiToggleB..." disabled={false} focusRipple={true} ...>
+                            <MuiButtonBase-root as="button" className="MuiButtonB..." ownerState={{...}} ...>
+                              <Insertion6>
+                              <button
++                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+-                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+                                onBlur={function}
+                                onClick={function handleChange}
+                                onContextMenu={function}
+                                onFocus={function}
+                                onKeyDown={function}
+                                onKeyUp={function}
+                                onMouseDown={function}
+                                onMouseLeave={function}
+                                onMouseUp={function}
+                                onDragLeave={function}
+                                onTouchEnd={function}
+                                onTouchMove={function}
+                                onTouchStart={function}
+                                tabIndex={0}
+                                type="button"
+                                disabled={false}
+                                onChange={function}
+                                value="feature"
++                               aria-pressed={false}
+-                               aria-pressed="true"
+                                aria-label="Feature in app"
+                                data-tsd-source="http://localhost:3000/__tsd/open-source?source=%2Fsrc%2Froutes%2Findex.tsx%3A270%3A9"
+                                ref={function}
+                              >
+                      <ToggleButton2 value="change" aria-label="Change exi..." data-tsd-source="/src/route...">
+                        <MuiToggleButton-root className="MuiToggleB..." disabled={false} focusRipple={true} ref={null} ...>
+                          <Insertion6>
+                          <ButtonBase2 className="MuiToggleB..." disabled={false} focusRipple={true} ...>
+                            <MuiButtonBase-root as="button" className="MuiButtonB..." ownerState={{...}} ...>
+                              <Insertion6>
+                              <button
++                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+-                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+                                onBlur={function}
+                                onClick={function handleChange}
+                                onContextMenu={function}
+                                onFocus={function}
+                                onKeyDown={function}
+                                onKeyUp={function}
+                                onMouseDown={function}
+                                onMouseLeave={function}
+                                onMouseUp={function}
+                                onDragLeave={function}
+                                onTouchEnd={function}
+                                onTouchMove={function}
+                                onTouchStart={function}
+                                tabIndex={0}
+                                type="button"
+                                disabled={false}
+                                onChange={function}
+                                value="change"
++                               aria-pressed={true}
+-                               aria-pressed="false"
+                                aria-label="Change existing feature"
+                                data-tsd-source="http://localhost:3000/__tsd/open-source?source=%2Fsrc%2Froutes%2Findex.tsx%3A270%3A9"
+                                ref={function}
+                              >
+                      ...
+        ...
+ @ http://localhost:3000/src/routes/__root.tsx:112
+[  292129ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; @ http://localhost:3000/src/routes/__root.tsx:112
+[  292129ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:51 [vite] (client) hmr update /src/styles.css?direct, /src/routes/index.tsx, /src/routes/index.tsx?tsr-split=component @ http://localhost:3000/src/routes/__root.tsx:112
+[  292129ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; @ http://localhost:3000/src/routes/__root.tsx:112
+[  292129ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:51 [vite] (ssr) page reload src/routes/index.tsx @ http://localhost:3000/src/routes/__root.tsx:112
+[  292129ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [vite] program reload @ http://localhost:3000/src/routes/__root.tsx:112
+[  292621ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:51 [vite] (client) hmr invalidate /src/routes/index.tsx Could not Fast Refresh (new export) @ http://localhost:3000/src/routes/__root.tsx:112
+[  292621ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:51 [vite] (client) page reload src/routes/index.tsx @ http://localhost:3000/src/routes/__root.tsx:112
+[  292621ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:51 [vite] (client) hmr invalidate /src/routes/index.tsx?tsr-split=component Could not Fast Refresh (new export) @ http://localhost:3000/src/routes/__root.tsx:112
+[  292621ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:51 [vite] (client) hmr update /src/routes/index.tsx @ http://localhost:3000/src/routes/__root.tsx:112
+[  293081ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:52 [vite] (client) hmr invalidate /src/routes/index.tsx Could not Fast Refresh (new export) @ http://localhost:3000/src/routes/__root.tsx:112
+[  293081ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:52 [vite] (client) page reload src/routes/index.tsx @ http://localhost:3000/src/routes/__root.tsx:112
+[  293081ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:52 [vite] (client) hmr invalidate /src/routes/index.tsx?tsr-split=component Could not Fast Refresh (new export) @ http://localhost:3000/src/routes/__root.tsx:112
+[  293081ms] [LOG] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; 00:35:52 [vite] (client) hmr update /src/routes/index.tsx @ http://localhost:3000/src/routes/__root.tsx:112
+[  293760ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3000/node_modules/.vite/deps/react-dom_client.js?v=784d185a:20102
+[  293800ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; Warning: A notFoundError was encountered on the route with ID "__root__", but a notFoundComponent option was not configured, nor was a router level defaultNotFoundComponent configured. Consider configuring at least one of these to avoid TanStack Router's overly generic defaultNotFoundComponent (<p>Not Found</p>) @ http://localhost:3000/src/routes/__root.tsx:112
+[  293980ms] [ERROR] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <MuiStack-root as="div" ownerState={{...}} ref={null} className="MuiStack-root" data-tsd-source="/src/route..." ...>
+      <Insertion6>
+      <div className="MuiStack-r..." data-tsd-source="/src/route...">
+        <WizardStepIndicator>
+        <Grid2 spacing={2} data-tsd-source="/src/route...">
+          <MuiStack-root as="div" ownerState={{...}} ref={null} className="MuiStack-root" data-tsd-source="/src/route..." ...>
+            <Insertion6>
+            <div className="MuiStack-r..." data-tsd-source="/src/route...">
+              <Typography2>
+              <BuildModeSelector value="bug" onChange={function} isMobile={false} theme={{...}} ...>
+                <ToggleButtonGroup2 exclusive={true} value="bug" onChange={function} fullWidth={true} color="primary" ...>
+                  <MuiToggleButtonGroup-root role="group" className="MuiToggleB..." ref={null} ...>
+                    <Insertion6>
+                    <div role="group" className="MuiToggleB..." aria-label="Build mode" data-tsd-source="/src/route...">
+                      <ToggleButton2>
+                      <ToggleButton2 value="feature" aria-label="Feature in..." data-tsd-source="/src/route...">
+                        <MuiToggleButton-root className="MuiToggleB..." disabled={false} focusRipple={true} ref={null} ...>
+                          <Insertion6>
+                          <ButtonBase2 className="MuiToggleB..." disabled={false} focusRipple={true} ...>
+                            <MuiButtonBase-root as="button" className="MuiButtonB..." ownerState={{...}} ...>
+                              <Insertion6>
+                              <button
++                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+-                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+                                onBlur={function}
+                                onClick={function handleChange}
+                                onContextMenu={function}
+                                onFocus={function}
+                                onKeyDown={function}
+                                onKeyUp={function}
+                                onMouseDown={function}
+                                onMouseLeave={function}
+                                onMouseUp={function}
+                                onDragLeave={function}
+                                onTouchEnd={function}
+                                onTouchMove={function}
+                                onTouchStart={function}
+                                tabIndex={0}
+                                type="button"
+                                disabled={false}
+                                onChange={function}
+                                value="feature"
++                               aria-pressed={false}
+-                               aria-pressed="true"
+                                aria-label="Feature in app"
+                                data-tsd-source="/src/routes/index.tsx:270:9"
+                                ref={function}
+                              >
+                      <ToggleButton2>
+                      <ToggleButton2 value="bug" aria-label="Fix a bug" data-tsd-source="/src/route...">
+                        <MuiToggleButton-root className="MuiToggleB..." disabled={false} focusRipple={true} ref={null} ...>
+                          <Insertion6>
+                          <ButtonBase2 className="MuiToggleB..." disabled={false} focusRipple={true} ...>
+                            <MuiButtonBase-root as="button" className="MuiButtonB..." ownerState={{...}} ...>
+                              <Insertion6>
+                              <button
++                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+-                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+                                onBlur={function}
+                                onClick={function handleChange}
+                                onContextMenu={function}
+                                onFocus={function}
+                                onKeyDown={function}
+                                onKeyUp={function}
+                                onMouseDown={function}
+                                onMouseLeave={function}
+                                onMouseUp={function}
+                                onDragLeave={function}
+                                onTouchEnd={function}
+                                onTouchMove={function}
+                                onTouchStart={function}
+                                tabIndex={0}
+                                type="button"
+                                disabled={false}
+                                onChange={function}
+                                value="bug"
++                               aria-pressed={true}
+-                               aria-pressed="false"
+                                aria-label="Fix a bug"
+                                data-tsd-source="/src/routes/index.tsx:270:9"
+                                ref={function}
+                              >
+        ...
+ @ http://localhost:3000/src/routes/__root.tsx:49
+[  294191ms] [ERROR] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <MuiStack-root as="div" ownerState={{...}} ref={null} className="MuiStack-root" data-tsd-source="/src/route..." ...>
+      <Insertion6>
+      <div className="MuiStack-r..." data-tsd-source="/src/route...">
+        <WizardStepIndicator>
+        <Grid2 spacing={2} data-tsd-source="/src/route...">
+          <MuiStack-root as="div" ownerState={{...}} ref={null} className="MuiStack-root" data-tsd-source="/src/route..." ...>
+            <Insertion6>
+            <div className="MuiStack-r..." data-tsd-source="/src/route...">
+              <Typography2>
+              <BuildModeSelector value="bug" onChange={function} isMobile={false} theme={{...}} ...>
+                <ToggleButtonGroup2 exclusive={true} value="bug" onChange={function} fullWidth={true} color="primary" ...>
+                  <MuiToggleButtonGroup-root role="group" className="MuiToggleB..." ref={null} ...>
+                    <Insertion6>
+                    <div role="group" className="MuiToggleB..." aria-label="Build mode" data-tsd-source="/src/route...">
+                      <ToggleButton2>
+                      <ToggleButton2 value="feature" aria-label="Feature in..." data-tsd-source="/src/route...">
+                        <MuiToggleButton-root className="MuiToggleB..." disabled={false} focusRipple={true} ref={null} ...>
+                          <Insertion6>
+                          <ButtonBase2 className="MuiToggleB..." disabled={false} focusRipple={true} ...>
+                            <MuiButtonBase-root as="button" className="MuiButtonB..." ownerState={{...}} ...>
+                              <Insertion6>
+                              <button
++                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+-                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+                                onBlur={function}
+                                onClick={function handleChange}
+                                onContextMenu={function}
+                                onFocus={function}
+                                onKeyDown={function}
+                                onKeyUp={function}
+                                onMouseDown={function}
+                                onMouseLeave={function}
+                                onMouseUp={function}
+                                onDragLeave={function}
+                                onTouchEnd={function}
+                                onTouchMove={function}
+                                onTouchStart={function}
+                                tabIndex={0}
+                                type="button"
+                                disabled={false}
+                                onChange={function}
+                                value="feature"
++                               aria-pressed={false}
+-                               aria-pressed="true"
+                                aria-label="Feature in app"
+                                data-tsd-source="http://localhost:3000/__tsd/open-source?source=%2Fsrc%2Froutes%2Findex.tsx%3A270%3A9"
+                                ref={function}
+                              >
+                      <ToggleButton2>
+                      <ToggleButton2 value="bug" aria-label="Fix a bug" data-tsd-source="/src/route...">
+                        <MuiToggleButton-root className="MuiToggleB..." disabled={false} focusRipple={true} ref={null} ...>
+                          <Insertion6>
+                          <ButtonBase2 className="MuiToggleB..." disabled={false} focusRipple={true} ...>
+                            <MuiButtonBase-root as="button" className="MuiButtonB..." ownerState={{...}} ...>
+                              <Insertion6>
+                              <button
++                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+-                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+                                onBlur={function}
+                                onClick={function handleChange}
+                                onContextMenu={function}
+                                onFocus={function}
+                                onKeyDown={function}
+                                onKeyUp={function}
+                                onMouseDown={function}
+                                onMouseLeave={function}
+                                onMouseUp={function}
+                                onDragLeave={function}
+                                onTouchEnd={function}
+                                onTouchMove={function}
+                                onTouchStart={function}
+                                tabIndex={0}
+                                type="button"
+                                disabled={false}
+                                onChange={function}
+                                value="bug"
++                               aria-pressed={true}
+-                               aria-pressed="false"
+                                aria-label="Fix a bug"
+                                data-tsd-source="http://localhost:3000/__tsd/open-source?source=%2Fsrc%2Froutes%2Findex.tsx%3A270%3A9"
+                                ref={function}
+                              >
+        ...
+ @ http://localhost:3000/src/routes/__root.tsx:112
+[  295918ms] [ERROR] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <MuiStack-root as="div" ownerState={{...}} ref={null} className="MuiStack-root" data-tsd-source="/src/route..." ...>
+      <Insertion6>
+      <div className="MuiStack-r..." data-tsd-source="/src/route...">
+        <WizardStepIndicator>
+        <Grid2 spacing={2} data-tsd-source="/src/route...">
+          <MuiStack-root as="div" ownerState={{...}} ref={null} className="MuiStack-root" data-tsd-source="/src/route..." ...>
+            <Insertion6>
+            <div className="MuiStack-r..." data-tsd-source="/src/route...">
+              <Typography2>
+              <BuildModeSelector value="change" onChange={function} isMobile={false} theme={{...}} ...>
+                <ToggleButtonGroup2 exclusive={true} value="change" onChange={function} fullWidth={true} color="primary" ...>
+                  <MuiToggleButtonGroup-root role="group" className="MuiToggleB..." ref={null} ...>
+                    <Insertion6>
+                    <div role="group" className="MuiToggleB..." aria-label="Build mode" data-tsd-source="/src/route...">
+                      <ToggleButton2>
+                      <ToggleButton2 value="feature" aria-label="Feature in..." data-tsd-source="/src/route...">
+                        <MuiToggleButton-root className="MuiToggleB..." disabled={false} focusRipple={true} ref={null} ...>
+                          <Insertion6>
+                          <ButtonBase2 className="MuiToggleB..." disabled={false} focusRipple={true} ...>
+                            <MuiButtonBase-root as="button" className="MuiButtonB..." ownerState={{...}} ...>
+                              <Insertion6>
+                              <button
++                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+-                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+                                onBlur={function}
+                                onClick={function handleChange}
+                                onContextMenu={function}
+                                onFocus={function}
+                                onKeyDown={function}
+                                onKeyUp={function}
+                                onMouseDown={function}
+                                onMouseLeave={function}
+                                onMouseUp={function}
+                                onDragLeave={function}
+                                onTouchEnd={function}
+                                onTouchMove={function}
+                                onTouchStart={function}
+                                tabIndex={0}
+                                type="button"
+                                disabled={false}
+                                onChange={function}
+                                value="feature"
++                               aria-pressed={false}
+-                               aria-pressed="true"
+                                aria-label="Feature in app"
+                                data-tsd-source="http://localhost:3000/__tsd/open-source?source=%2Fsrc%2Froutes%2Findex.tsx%3A270%3A9"
+                                ref={function}
+                              >
+                      <ToggleButton2 value="change" aria-label="Change exi..." data-tsd-source="/src/route...">
+                        <MuiToggleButton-root className="MuiToggleB..." disabled={false} focusRipple={true} ref={null} ...>
+                          <Insertion6>
+                          <ButtonBase2 className="MuiToggleB..." disabled={false} focusRipple={true} ...>
+                            <MuiButtonBase-root as="button" className="MuiButtonB..." ownerState={{...}} ...>
+                              <Insertion6>
+                              <button
++                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+-                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+                                onBlur={function}
+                                onClick={function handleChange}
+                                onContextMenu={function}
+                                onFocus={function}
+                                onKeyDown={function}
+                                onKeyUp={function}
+                                onMouseDown={function}
+                                onMouseLeave={function}
+                                onMouseUp={function}
+                                onDragLeave={function}
+                                onTouchEnd={function}
+                                onTouchMove={function}
+                                onTouchStart={function}
+                                tabIndex={0}
+                                type="button"
+                                disabled={false}
+                                onChange={function}
+                                value="change"
++                               aria-pressed={true}
+-                               aria-pressed="false"
+                                aria-label="Change existing feature"
+                                data-tsd-source="http://localhost:3000/__tsd/open-source?source=%2Fsrc%2Froutes%2Findex.tsx%3A270%3A9"
+                                ref={function}
+                              >
+                      ...
+        ...
+ @ http://localhost:3000/src/routes/__root.tsx:112
+[  311740ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; Warning: Route file "/Users/chrislaughlin/code/next-level-prompts/src/routes/index.test.tsx" does not export a Route. This file will not be included in the route tree.
+
+If this file is not intended to be a route, you can exclude it using one of these options:
+  1. Rename the file to "/Users/chrislaughlin/code/next-level-prompts/src/routes/-index.test.tsx" (prefix with "-")
+  2. Use 'routeFileIgnorePattern' in your config to match this file
+
+Current configuration:
+  routeFileIgnorePrefix: "-"
+  routeFileIgnorePattern: undefined @ http://localhost:3000/src/routes/__root.tsx:112
+[  312152ms] [WARNING] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; Warning: A notFoundError was encountered on the route with ID "__root__", but a notFoundComponent option was not configured, nor was a router level defaultNotFoundComponent configured. Consider configuring at least one of these to avoid TanStack Router's overly generic defaultNotFoundComponent (<p>Not Found</p>) @ http://localhost:3000/src/routes/__root.tsx:112
+[  312879ms] [ERROR] %c[Server]%c color: #9333ea; font-weight: bold; color: inherit; [Client] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <MuiStack-root as="div" ownerState={{...}} ref={null} className="MuiStack-root" data-tsd-source="/src/route..." ...>
+      <Insertion6>
+      <div className="MuiStack-r..." data-tsd-source="/src/route...">
+        <WizardStepIndicator>
+        <Grid2 spacing={2} data-tsd-source="/src/route...">
+          <MuiStack-root as="div" ownerState={{...}} ref={null} className="MuiStack-root" data-tsd-source="/src/route..." ...>
+            <Insertion6>
+            <div className="MuiStack-r..." data-tsd-source="/src/route...">
+              <Typography2>
+              <BuildModeSelector value="change" onChange={function} isMobile={false} theme={{...}} ...>
+                <ToggleButtonGroup2 exclusive={true} value="change" onChange={function} fullWidth={true} color="primary" ...>
+                  <MuiToggleButtonGroup-root role="group" className="MuiToggleB..." ref={null} ...>
+                    <Insertion6>
+                    <div role="group" className="MuiToggleB..." aria-label="Build mode" data-tsd-source="/src/route...">
+                      <ToggleButton2>
+                      <ToggleButton2 value="feature" aria-label="Feature in..." data-tsd-source="/src/route...">
+                        <MuiToggleButton-root className="MuiToggleB..." disabled={false} focusRipple={true} ref={null} ...>
+                          <Insertion6>
+                          <ButtonBase2 className="MuiToggleB..." disabled={false} focusRipple={true} ...>
+                            <MuiButtonBase-root as="button" className="MuiButtonB..." ownerState={{...}} ...>
+                              <Insertion6>
+                              <button
++                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+-                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+                                onBlur={function}
+                                onClick={function handleChange}
+                                onContextMenu={function}
+                                onFocus={function}
+                                onKeyDown={function}
+                                onKeyUp={function}
+                                onMouseDown={function}
+                                onMouseLeave={function}
+                                onMouseUp={function}
+                                onDragLeave={function}
+                                onTouchEnd={function}
+                                onTouchMove={function}
+                                onTouchStart={function}
+                                tabIndex={0}
+                                type="button"
+                                disabled={false}
+                                onChange={function}
+                                value="feature"
++                               aria-pressed={false}
+-                               aria-pressed="true"
+                                aria-label="Feature in app"
+                                data-tsd-source="http://localhost:3000/__tsd/open-source?source=%2Fsrc%2Froutes%2Findex.tsx%3A270%3A9"
+                                ref={function}
+                              >
+                      <ToggleButton2 value="change" aria-label="Change exi..." data-tsd-source="/src/route...">
+                        <MuiToggleButton-root className="MuiToggleB..." disabled={false} focusRipple={true} ref={null} ...>
+                          <Insertion6>
+                          <ButtonBase2 className="MuiToggleB..." disabled={false} focusRipple={true} ...>
+                            <MuiButtonBase-root as="button" className="MuiButtonB..." ownerState={{...}} ...>
+                              <Insertion6>
+                              <button
++                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+-                               className="MuiButtonBase-root MuiToggleButtonGroup-grouped MuiToggleButtonGroup-groupe..."
+                                onBlur={function}
+                                onClick={function handleChange}
+                                onContextMenu={function}
+                                onFocus={function}
+                                onKeyDown={function}
+                                onKeyUp={function}
+                                onMouseDown={function}
+                                onMouseLeave={function}
+                                onMouseUp={function}
+                                onDragLeave={function}
+                                onTouchEnd={function}
+                                onTouchMove={function}
+                                onTouchStart={function}
+                                tabIndex={0}
+                                type="button"
+                                disabled={false}
+                                onChange={function}
+                                value="change"
++                               aria-pressed={true}
+-                               aria-pressed="false"
+                                aria-label="Change existing feature"
+                                data-tsd-source="http://localhost:3000/__tsd/open-source?source=%2Fsrc%2Froutes%2Findex.tsx%3A270%3A9"
+                                ref={function}
+                              >
+                      ...
+        ...
+ @ http://localhost:3000/src/routes/__root.tsx:112

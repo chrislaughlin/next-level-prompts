@@ -1,0 +1,74 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: Prompt Builder
+      - heading "Retro synthwave prompt composer for coding agents" [level=3] [ref=e7]
+      - paragraph [ref=e8]: Feed a rough idea, move through a quick wizard, and get a structured agent-friendly prompt with starter, middle goals, closing questions, detected skills, and the grill-me safety net. Runs fully in your browser via Transformers.js.
+    - generic [ref=e9]:
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - generic [ref=e15]:
+            - img [ref=e17]:
+              - generic [ref=e19]: "1"
+            - generic [ref=e21]: Mode
+          - generic [ref=e25]:
+            - img [ref=e27]:
+              - generic [ref=e29]: "2"
+            - generic [ref=e31]: Approach
+          - generic [ref=e35]:
+            - img [ref=e37]:
+              - generic [ref=e39]: "3"
+            - generic [ref=e41]: Keywords
+          - generic [ref=e45]:
+            - img [ref=e47]:
+              - generic [ref=e49]: "4"
+            - generic [ref=e51]: Goal
+        - generic [ref=e52]:
+          - heading "What are you building?" [level=6] [ref=e53]
+          - group [ref=e54]:
+            - button "Full application" [ref=e55] [cursor=pointer]:
+              - img [ref=e56]
+              - text: Full app
+            - button "Feature in app" [pressed] [ref=e58] [cursor=pointer]:
+              - img [ref=e59]
+              - text: Feature
+            - button "Change existing feature" [ref=e61] [cursor=pointer]:
+              - img [ref=e62]
+              - text: Change
+            - button "Fix a bug" [ref=e64] [cursor=pointer]:
+              - img [ref=e65]
+              - text: Bug fix
+        - generic [ref=e67]:
+          - button "Reset" [ref=e68] [cursor=pointer]
+          - generic [ref=e69]:
+            - button "Back" [disabled]
+            - button "Next" [ref=e70] [cursor=pointer]
+      - generic [ref=e72]:
+        - generic [ref=e73]:
+          - heading "Preview" [level=6] [ref=e75]
+          - generic [ref=e76]:
+            - generic "Copy prompt" [ref=e77]:
+              - button "Copy prompt" [ref=e78] [cursor=pointer]:
+                - img [ref=e79]
+            - generic "Download .txt" [ref=e81]:
+              - button "Download prompt" [ref=e82] [cursor=pointer]:
+                - img [ref=e83]
+        - code [ref=e87]: Your composed prompt will appear here.
+        - separator [ref=e88]
+        - heading "Detected skills (auto-attached)" [level=6] [ref=e89]
+        - generic [ref=e90]:
+          - generic [ref=e92]: grill-me
+          - generic [ref=e94]: grill-me
+  - contentinfo [ref=e95]:
+    - generic [ref=e96]:
+      - paragraph [ref=e97]: © 2026 Your name here. All rights reserved.
+      - paragraph [ref=e98]: Built with TanStack Start
+    - generic [ref=e99]:
+      - link "Follow TanStack on X" [ref=e100] [cursor=pointer]:
+        - /url: https://x.com/tan_stack
+        - generic [ref=e101]: Follow TanStack on X
+        - img [ref=e102]
+      - link "Go to TanStack GitHub" [ref=e104] [cursor=pointer]:
+        - /url: https://github.com/TanStack
+        - generic [ref=e105]: Go to TanStack GitHub
+        - img [ref=e106]
