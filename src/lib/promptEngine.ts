@@ -1,7 +1,11 @@
 export type PromptRequest = {
   seed: string
-  keywords?: string
-  multiPhasePreference?: 'ask' | 'force' | 'skip'
+  keywords?: string[]
+  buildMode?: 'app' | 'feature' | 'change' | 'bug'
+  buildApproach?: 'one-shot' | 'multi-phase'
+  phaseCount?: number
+  milestones?: string[]
+  multiPhasePreference?: 'ask' | 'force' | 'skip' // kept for backward compatibility
 }
 
 export type PromptSections = {
@@ -168,6 +172,7 @@ function buildStarter(objective: string) {
 function buildQuestions(
   seed: string,
   multiPhasePreference: PromptRequest['multiPhasePreference'],
+  buildApproach: PromptRequest['buildApproach'],
   profile: TaskProfile,
 ) {
   const base = [
@@ -181,6 +186,10 @@ function buildQuestions(
     base.unshift('Enable multi-phase plan mode and present phase 1 with scope guardrails.')
   } else if (multiPhasePreference === 'ask') {
     base.unshift('Ask once whether multi-phase is desired; default to yes if no answer.')
+  }
+
+  if (buildApproach === 'multi-phase') {
+    base.unshift('Propose a phased plan with milestones and clear exit criteria for each phase.')
   }
   return Array.from(new Set(base.filter(Boolean)))
 }
@@ -278,15 +287,16 @@ function extractStructuredRewrite(raw: string | null, seed: string, profile: Tas
 
 export async function composePrompt(request: PromptRequest): Promise<PromptSections> {
   const seed = normalizeSeed(request.seed || 'a small feature')
-  const profile = classifyTask(seed, request.keywords)
+  const keywordText = normalizeSeed((request.keywords ?? []).join(' '))
+  const profile = classifyTask(seed, keywordText)
 
   const middleRaw = await generateMiddleWithTransformers(seed)
   const middle = extractStructuredRewrite(middleRaw, seed, profile)
   const objectiveLine = cleanSegment(middle.split('\n')[0] ?? seed)
   const starter = buildStarter(objectiveLine)
 
-  const questions = buildQuestions(seed, request.multiPhasePreference, profile)
-  const skills = detectSkills(`${seed} ${request.keywords ?? ''} ${middle}`)
+  const questions = buildQuestions(seed, request.multiPhasePreference, request.buildApproach, profile)
+  const skills = detectSkills(`${seed} ${keywordText} ${middle}`)
   const grillMe = GRILL_ME_TRAILING
 
   const constraints = Array.from(new Set([...BASE_CONSTRAINTS, ...profile.constraints]))
@@ -300,13 +310,40 @@ export async function composePrompt(request: PromptRequest): Promise<PromptSecti
     `- User idea: ${seed}`,
   ]
 
-  if (request.keywords?.trim()) {
-    blocks.push(`- Keywords: ${stripHype(request.keywords)}`)
+  if ((request.keywords ?? []).length > 0) {
+    blocks.push(`- Keywords: ${stripHype(keywordText)}`)
+  }
+
+  if (request.buildMode) {
+    blocks.push(`- Build mode: ${request.buildMode}`)
+  }
+
+  if (request.buildApproach) {
+    blocks.push(`- Build approach: ${request.buildApproach}`)
+  }
+
+  if (request.buildApproach === 'multi-phase') {
+    if (request.phaseCount) {
+      blocks.push(`- Target phase count: ${request.phaseCount}`)
+    }
+    if ((request.milestones ?? []).length > 0) {
+      blocks.push(`- Milestones: ${(request.milestones ?? []).join('; ')}`)
+    }
   }
 
   blocks.push('', 'Deliverable:', `- ${profile.deliverableHint}`)
 
   blocks.push('', 'Constraints:', ...constraints.map((c) => `- ${c}`))
+
+  if (request.buildMode === 'change') {
+    blocks.push('- Keep regression risk minimal and note rollback criteria.')
+  } else if (request.buildMode === 'bug') {
+    blocks.push('- Include repro steps, expected vs actual, and guard tests.')
+  }
+
+  if (request.buildApproach === 'multi-phase') {
+    blocks.push('- Provide phase-by-phase deliverables with exit criteria.')
+  }
 
   blocks.push('', 'Format:', `- ${profile.formatHint}`)
 

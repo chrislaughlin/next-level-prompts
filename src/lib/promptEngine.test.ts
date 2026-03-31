@@ -5,7 +5,7 @@ describe('composePrompt', () => {
   it('generates structured sections', async () => {
     const res = await composePrompt({
       seed: 'Build a feature flag dashboard in React',
-      keywords: 'react flags',
+      keywords: ['react', 'flags'],
       multiPhasePreference: 'ask',
     })
 
