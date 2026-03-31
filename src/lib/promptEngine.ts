@@ -17,9 +17,6 @@ export type PromptSections = {
   fullPrompt: string
 }
 
-const GRILL_ME_TRAILING =
-  'Switch to the grill-me skill and interrogate assumptions before implementation.'
-
 type TaskDomain = 'code' | 'writing' | 'design' | 'research' | 'data' | 'general'
 
 type TaskProfile = {
@@ -57,9 +54,9 @@ const BASE_CONSTRAINTS = [
 ]
 
 const QUALITY_BAR = [
-  'State the objective first, then constraints, then deliverable.',
+  'State the objective first, then inputs/constraints, then deliverable.',
   'Make acceptance checks concrete and verifiable.',
-  'If information is missing, ask only 1-2 blocking questions at the end.',
+  'If critical information is missing, ask at most 1-2 short blocking questions.',
 ]
 
 const DOMAIN_RULES: { domain: TaskDomain; keywords: string[]; deliverableHint: string; constraints?: string[]; questions?: string[]; formatHint?: string; checks?: string[] }[] = [
@@ -170,28 +167,9 @@ function buildStarter(objective: string) {
 }
 
 function buildQuestions(
-  seed: string,
-  multiPhasePreference: PromptRequest['multiPhasePreference'],
-  buildApproach: PromptRequest['buildApproach'],
   profile: TaskProfile,
 ) {
-  const base = [
-    `Smallest useful milestone for "${seed}"?`,
-    'Critical risks/unknowns to de-risk first?',
-    'Acceptance checks that prove it is done?',
-    ...profile.questions,
-  ]
-
-  if (multiPhasePreference === 'force') {
-    base.unshift('Enable multi-phase plan mode and present phase 1 with scope guardrails.')
-  } else if (multiPhasePreference === 'ask') {
-    base.unshift('Ask once whether multi-phase is desired; default to yes if no answer.')
-  }
-
-  if (buildApproach === 'multi-phase') {
-    base.unshift('Propose a phased plan with milestones and clear exit criteria for each phase.')
-  }
-  return Array.from(new Set(base.filter(Boolean)))
+  return Array.from(new Set(profile.questions.filter(Boolean))).slice(0, 2)
 }
 
 function keywordCandidates(text: string) {
@@ -247,7 +225,7 @@ async function generateMiddleWithTransformers(seed: string): Promise<string | nu
 }
 
 function fallbackMiddle(seed: string, profile: TaskProfile) {
-  return `Objective: ${seed}. Key points: stay within scope, avoid invention, deliver a concrete, testable outcome. ${profile.deliverableHint}`
+  return `Objective: ${seed}\nDeliverable: ${profile.deliverableHint}`
 }
 
 function stripLabel(text: string) {
@@ -296,9 +274,8 @@ export async function composePrompt(request: PromptRequest): Promise<PromptSecti
   const objectiveLine = cleanSegment(middle.split('\n')[0] ?? seed)
   const starter = buildStarter(objectiveLine)
 
-  const questions = buildQuestions(seed, request.multiPhasePreference, request.buildApproach, profile)
+  const questions = buildQuestions(profile)
   const skills = detectSkills(`${seed} ${keywordText} ${middle}`)
-  const grillMe = GRILL_ME_TRAILING
 
   const constraints = Array.from(new Set([...BASE_CONSTRAINTS, ...profile.constraints]))
   const checks = Array.from(new Set(profile.checks.length ? profile.checks : ['Output is concise, testable, and free of invented details.']))
@@ -315,23 +292,6 @@ export async function composePrompt(request: PromptRequest): Promise<PromptSecti
     blocks.push(`- Keywords: ${stripHype(keywordText)}`)
   }
 
-  if (request.buildMode) {
-    blocks.push(`- Build mode: ${request.buildMode}`)
-  }
-
-  if (request.buildApproach) {
-    blocks.push(`- Build approach: ${request.buildApproach}`)
-  }
-
-  if (request.buildApproach === 'multi-phase') {
-    if (request.phaseCount) {
-      blocks.push(`- Target phase count: ${request.phaseCount}`)
-    }
-    if ((request.milestones ?? []).length > 0) {
-      blocks.push(`- Milestones: ${(request.milestones ?? []).join('; ')}`)
-    }
-  }
-
   blocks.push('', 'Deliverable:', `- ${profile.deliverableHint}`)
 
   blocks.push('', 'Constraints:', ...constraints.map((c) => `- ${c}`))
@@ -342,32 +302,26 @@ export async function composePrompt(request: PromptRequest): Promise<PromptSecti
     blocks.push('- Include repro steps, expected vs actual, and guard tests.')
   }
 
-  if (request.buildApproach === 'multi-phase') {
-    blocks.push('- Provide phase-by-phase deliverables with exit criteria.')
-  }
-
   blocks.push('', 'Format:', `- ${profile.formatHint}`)
 
   blocks.push('', 'Quality Bar:', ...QUALITY_BAR.map((c) => `- ${c}`))
 
   blocks.push('', 'Checks:', ...checks.map((c) => `- ${c}`))
 
-  blocks.push('', 'Questions (ask only if blocking):', ...questions.map((q, i) => `${i + 1}. ${q}`))
-
-  if (skills.length > 0) {
-    blocks.push('', 'Skills to install/use:', ...skills.map((s) => `- ${s}`), '- grill-me')
-  } else {
-    blocks.push('', 'Skills to install/use:', '- grill-me')
+  if (questions.length > 0) {
+    blocks.push('', 'Blocking Questions (only if critical info is missing):', ...questions.map((q, i) => `${i + 1}. ${q}`))
   }
 
-  blocks.push('', grillMe)
+  if (skills.length > 0) {
+    blocks.push('', 'Skills to install/use:', ...skills.map((s) => `- ${s}`))
+  }
 
   return {
     starter,
     middle,
     questions,
     skills,
-    grillMe,
+    grillMe: '',
     fullPrompt: blocks.join('\n'),
   }
 }

@@ -10,9 +10,10 @@ describe('composePrompt', () => {
     })
 
     expect(res.starter.toLowerCase()).toContain('objective:')
-    expect(res.questions.length).toBeGreaterThan(2)
+    expect(res.questions.length).toBeLessThanOrEqual(2)
     expect(res.fullPrompt).toContain('Objective:')
     expect(res.fullPrompt).toContain('Skills')
+    expect(res.fullPrompt).not.toContain('grill-me')
   })
 
   it('falls back when seed is empty-ish', async () => {

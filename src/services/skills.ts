@@ -25,7 +25,5 @@ export function findSkillsFromText(text: string): SkillMatch[] {
       matches.push({ skill: entry.skill, reason: entry.reason })
     }
   })
-  // Always ensure grill-me last
-  matches.push({ skill: 'grill-me', reason: 'Interrogate assumptions before building' })
   return matches
 }

@@ -647,19 +647,18 @@ function App() {
       </Typography>
       <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
         {skillBadges.length === 0 ? (
-          <Chip label="grill-me" color="primary" variant="outlined" />
+          <Typography variant="body2" color="text.secondary">
+            No framework-specific skills detected
+          </Typography>
         ) : (
           skillBadges.map((s) => (
             <Chip
               key={s.skill}
               label={`${s.skill}`}
               variant="outlined"
-              color={s.skill === 'grill-me' ? 'secondary' : 'default'}
+              color="default"
             />
           ))
-        )}
-        {!skillBadges.some((s) => s.skill === 'grill-me') && (
-          <Chip label="grill-me" color="secondary" variant="outlined" />
         )}
       </Stack>
     </Paper>
@@ -830,7 +829,7 @@ function App() {
                 Retro synthwave prompt composer for coding agents
               </Typography>
               <Typography variant="body1" color="text.secondary" maxWidth={780}>
-                Feed a rough idea, move through a quick wizard, and get a structured agent-friendly prompt with starter, middle goals, closing questions, detected skills, and the grill-me safety net. Runs fully in your browser via Transformers.js.
+                Feed a rough idea, move through a quick wizard, and get a tighter agent-friendly prompt with clear objective, constraints, checks, and detected skills. Runs fully in your browser via Transformers.js.
               </Typography>
             </Stack>
 
