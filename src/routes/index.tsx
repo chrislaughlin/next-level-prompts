@@ -7,11 +7,13 @@ import {
   Divider,
   FormControl,
   Grid,
+  Alert,
   IconButton,
   InputLabel,
   LinearProgress,
   MenuItem,
   Paper,
+  Snackbar,
   Select,
   Stack,
   TextField,
@@ -37,12 +39,23 @@ import {
 
 export const Route = createFileRoute('/')({ component: App })
 
-const STORAGE_KEY = 'next-level-prompts-state'
-
 type Preference = 'ask' | 'force' | 'skip'
 
+const PLACEHOLDER_IDEAS = [
+  'Draft a launch email for a new open-source CLI tool',
+  'Plan a workshop on prompt engineering basics',
+  'Design a retro terminal-style landing page',
+  'Create a study plan for learning Rust in 30 days',
+  'Outline a tutorial on deploying Next.js to Vercel',
+  'Generate interview questions for a staff-level frontend role',
+  'Write product copy for an AI meeting notes app',
+  'Map a data pipeline from ingestion to dashboard',
+  'Brainstorm quests for a text-based cyberpunk game',
+  'Summarize a research paper on diffusion models',
+]
+
 function App() {
-  const [seed, setSeed] = useState('Build a retro synthwave prompt composer')
+  const [seed, setSeed] = useState('')
   const [keywords, setKeywords] = useState('')
   const [multiPhasePreference, setMultiPhasePreference] =
     useState<Preference>('ask')
@@ -52,26 +65,22 @@ function App() {
   const [skillBadges, setSkillBadges] = useState<
     { skill: string; reason: string }[]
   >([])
+  const [isStreaming, setIsStreaming] = useState(false)
+  const [toast, setToast] = useState<{
+    open: boolean
+    message: string
+    severity: 'success' | 'error'
+  }>({ open: false, message: '', severity: 'success' })
   const [modelStatus, setModelStatus] = useState<
     'idle' | 'warming' | 'warming-cached' | 'ready' | 'error'
   >('idle')
   const [backend, setBackend] = useState<'webgpu' | 'wasm' | null>(null)
   const [webGpuPreferred, setWebGpuPreferred] = useState<boolean | null>(null)
+  const [placeholderIndex, setPlaceholderIndex] = useState(() =>
+    Math.floor(Math.random() * PLACEHOLDER_IDEAS.length),
+  )
+  const seedInputRef = useRef<HTMLTextAreaElement | null>(null)
   const previewRef = useRef<HTMLDivElement | null>(null)
-
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored)
-        setSeed(parsed.seed ?? seed)
-        setKeywords(parsed.keywords ?? '')
-        setMultiPhasePreference(parsed.multiPhasePreference ?? 'ask')
-      } catch {
-        // ignore
-      }
-    }
-  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -90,17 +99,6 @@ function App() {
     }
   }, [])
 
-  const persist = useCallback(() => {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        seed,
-        keywords,
-        multiPhasePreference,
-      }),
-    )
-  }, [seed, keywords, multiPhasePreference])
-
   const scrollToPreview = useCallback(() => {
     if (previewRef.current) {
       previewRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -110,6 +108,7 @@ function App() {
   const regenerate = useCallback(async () => {
     if (!seed.trim()) return
     setLoading(true)
+    setIsStreaming(true)
     setError(null)
     try {
       const result = await composePrompt({
@@ -120,13 +119,23 @@ function App() {
       setPreview(result)
       const skills = findSkillsFromText(`${seed} ${keywords} ${result.middle}`)
       setSkillBadges(skills)
-      persist()
+      setToast({
+        open: true,
+        message: 'Prompt streamed successfully',
+        severity: 'success',
+      })
     } catch (err: any) {
       setError(err?.message ?? 'Failed to generate prompt')
+      setToast({
+        open: true,
+        message: err?.message ?? 'Prompt generation failed',
+        severity: 'error',
+      })
     } finally {
       setLoading(false)
+      setIsStreaming(false)
     }
-  }, [seed, keywords, multiPhasePreference, persist])
+  }, [seed, keywords, multiPhasePreference])
 
   const handleGenerate = useCallback(() => {
     scrollToPreview()
@@ -208,6 +217,22 @@ function App() {
     URL.revokeObjectURL(url)
   }, [promptText])
 
+  useEffect(() => {
+    const id = setInterval(() => {
+      setPlaceholderIndex((prev) => (prev + 1) % PLACEHOLDER_IDEAS.length)
+    }, 4000)
+    return () => clearInterval(id)
+  }, [])
+
+  useEffect(() => {
+    seedInputRef.current?.focus()
+  }, [])
+
+  const handleToastClose = useCallback((_: any, reason?: string) => {
+    if (reason === 'clickaway') return
+    setToast((prev) => ({ ...prev, open: false }))
+  }, [])
+
   return (
     <>
       {(modelStatus === 'warming' || modelStatus === 'warming-cached') && (
@@ -229,14 +254,7 @@ function App() {
         >
           <CircularProgress color="inherit" size={56} thickness={4} />
           <Typography variant="h6" fontWeight={700}>
-            {modelStatus === 'warming-cached'
-              ? 'Loading model from cache…'
-              : 'Downloading Hugging Face model…'}
-          </Typography>
-          <Typography variant="body2" sx={{ maxWidth: 360, opacity: 0.8 }}>
-            {modelStatus === 'warming-cached'
-              ? 'Model found in IndexedDB. Loading into memory.'
-              : 'This happens only once per browser. Keep this tab open until the download finishes.'}
+            Loading prompt generator
           </Typography>
         </Box>
       )}
@@ -269,7 +287,7 @@ function App() {
             sx={{
               position: 'relative',
               zIndex: 1,
-              maxWidth: 1200,
+              maxWidth: '100%',
               mx: 'auto',
               px: { xs: 2, md: 4 },
             }}
@@ -299,7 +317,8 @@ function App() {
                       minRows={4}
                       value={seed}
                       onChange={(e) => setSeed(e.target.value)}
-                      placeholder="e.g. Build a React dashboard for monitoring feature flags"
+                      inputRef={seedInputRef}
+                      placeholder={PLACEHOLDER_IDEAS[placeholderIndex]}
                       fullWidth
                     />
                     <TextField
@@ -410,7 +429,7 @@ function App() {
                 </Paper>
               </Grid>
 
-              <Grid item xs={12} md={7}>
+              <Grid item xs={12} md={12}>
                 <Paper
                   ref={previewRef}
                   sx={{
@@ -426,7 +445,17 @@ function App() {
                     alignItems="center"
                     mb={1}
                   >
-                    <Typography variant="h6">Preview</Typography>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Typography variant="h6">Preview</Typography>
+                      {isStreaming && (
+                        <Chip
+                          size="small"
+                          color="secondary"
+                          label="Streaming…"
+                          icon={<CircularProgress size={14} thickness={5} />}
+                        />
+                      )}
+                    </Stack>
                     <Stack direction="row" spacing={1}>
                       <Tooltip title="Copy prompt">
                         <span>
@@ -444,7 +473,14 @@ function App() {
                       </Tooltip>
                     </Stack>
                   </Stack>
-                  {loading && <LinearProgress sx={{ mb: 2 }} />}
+                  {loading && (
+                    <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+                      <LinearProgress sx={{ flex: 1 }} />
+                      <Typography variant="caption" color="text.secondary">
+                        Streaming prompt…
+                      </Typography>
+                    </Stack>
+                  )}
                   <Box
                     sx={{
                       backgroundColor: 'rgba(255,255,255,0.04)',
@@ -503,6 +539,22 @@ function App() {
           </Box>
         </Box>
       </Box>
+
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={4000}
+        onClose={handleToastClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={handleToastClose}
+          severity={toast.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </>
   )
 }
