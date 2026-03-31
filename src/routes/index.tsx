@@ -415,7 +415,6 @@ function App() {
       sx={{
         p: 3,
         borderRadius: 3,
-        position: 'relative',
         minHeight: 480,
         position: isDesktop ? 'sticky' : 'relative',
         top: isDesktop ? theme.spacing(2) : 'auto',
