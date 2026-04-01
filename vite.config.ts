@@ -17,6 +17,16 @@ const config = defineConfig({
     tanstackStart(),
     viteReact(),
   ],
+  build: {
+    rollupOptions: {
+      external: [
+        'onnxruntime-node',
+        'onnxruntime-common',
+        '@huggingface/transformers',
+        'sharp',
+      ],
+    },
+  },
 })
 
 export default config
