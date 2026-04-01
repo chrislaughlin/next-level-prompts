@@ -3,26 +3,26 @@ import ThemeToggle from './ThemeToggle'
 
 export default function Header() {
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--header-bg)] px-4 backdrop-blur-lg">
-      <nav className="page-wrap flex flex-wrap items-center gap-x-3 gap-y-2 py-3 sm:py-4">
+    <header className="sticky top-0 z-50 border-b-2 border-[var(--line)] bg-[var(--header-bg)] px-4 backdrop-blur-lg">
+      <nav className="page-wrap flex flex-wrap items-center gap-x-3 gap-y-3 py-3 sm:py-4">
         <h2 className="m-0 flex-shrink-0 text-base font-semibold tracking-tight">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--chip-line)] bg-[var(--chip-bg)] px-3 py-1.5 text-sm text-[var(--sea-ink)] no-underline shadow-[0_8px_24px_rgba(30,90,72,0.08)] sm:px-4 sm:py-2"
+            className="inline-flex items-center gap-3 rounded-none border-2 border-[var(--chip-line)] bg-[var(--chip-bg)] px-3 py-2 text-[11px] uppercase tracking-[0.18em] text-[var(--text-main)] no-underline shadow-[0_0_0_1px_rgba(22,242,255,0.35),0_0_20px_rgba(255,57,212,0.24)] sm:px-4"
           >
-            <span className="h-2 w-2 rounded-full bg-[linear-gradient(90deg,#56c6be,#7ed3bf)]" />
-            TanStack Start
+            <span className="h-2.5 w-2.5 bg-[var(--pixel-yellow)] shadow-[0_0_12px_rgba(255,243,107,0.7)]" />
+            Next Level Prompts
           </Link>
         </h2>
 
         <div className="ml-auto flex items-center gap-1.5 sm:ml-0 sm:gap-2">
           <a
-            href="https://x.com/tan_stack"
+            href="https://x.com"
             target="_blank"
             rel="noreferrer"
-            className="hidden rounded-xl p-2 text-[var(--sea-ink-soft)] transition hover:bg-[var(--link-bg-hover)] hover:text-[var(--sea-ink)] sm:block"
+            className="hidden rounded-none border border-transparent p-2 text-[var(--text-dim)] transition hover:border-[var(--line)] hover:bg-[var(--link-bg-hover)] hover:text-[var(--pixel-yellow)] sm:block"
           >
-            <span className="sr-only">Follow TanStack on X</span>
+            <span className="sr-only">Open X</span>
             <svg viewBox="0 0 16 16" aria-hidden="true" width="24" height="24">
               <path
                 fill="currentColor"
@@ -31,12 +31,12 @@ export default function Header() {
             </svg>
           </a>
           <a
-            href="https://github.com/TanStack"
+            href="https://github.com"
             target="_blank"
             rel="noreferrer"
-            className="hidden rounded-xl p-2 text-[var(--sea-ink-soft)] transition hover:bg-[var(--link-bg-hover)] hover:text-[var(--sea-ink)] sm:block"
+            className="hidden rounded-none border border-transparent p-2 text-[var(--text-dim)] transition hover:border-[var(--line)] hover:bg-[var(--link-bg-hover)] hover:text-[var(--pixel-cyan)] sm:block"
           >
-            <span className="sr-only">Go to TanStack GitHub</span>
+            <span className="sr-only">Open GitHub</span>
             <svg viewBox="0 0 16 16" aria-hidden="true" width="24" height="24">
               <path
                 fill="currentColor"
@@ -48,13 +48,13 @@ export default function Header() {
           <ThemeToggle />
         </div>
 
-        <div className="order-3 flex w-full flex-wrap items-center gap-x-4 gap-y-1 pb-1 text-sm font-semibold sm:order-2 sm:w-auto sm:flex-nowrap sm:pb-0">
+        <div className="order-3 flex w-full flex-wrap items-center gap-x-4 gap-y-1 pb-1 text-xs font-semibold uppercase tracking-[0.18em] sm:order-2 sm:w-auto sm:flex-nowrap sm:pb-0">
           <Link
             to="/"
             className="nav-link"
             activeProps={{ className: 'nav-link is-active' }}
           >
-            Home
+            Prompt Lab
           </Link>
           <Link
             to="/about"
@@ -64,12 +64,10 @@ export default function Header() {
             About
           </Link>
           <a
-            href="https://tanstack.com/start/latest/docs/framework/react/overview"
+            href="#preview"
             className="nav-link"
-            target="_blank"
-            rel="noreferrer"
           >
-            Docs
+            Output
           </a>
         </div>
       </nav>

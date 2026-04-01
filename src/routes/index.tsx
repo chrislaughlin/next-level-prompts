@@ -12,9 +12,6 @@ import {
   Paper,
   Snackbar,
   Stack,
-  Step,
-  StepLabel,
-  Stepper,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
@@ -23,25 +20,33 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material'
-import { alpha } from '@mui/material/styles'
-import AppsIcon from '@mui/icons-material/Apps'
-import BugReportIcon from '@mui/icons-material/BugReport'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import DownloadIcon from '@mui/icons-material/Download'
-import ExtensionIcon from '@mui/icons-material/Extension'
 import RefreshIcon from '@mui/icons-material/Refresh'
-import RepeatIcon from '@mui/icons-material/Repeat'
 import TimelineIcon from '@mui/icons-material/Timeline'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import {
+  BuildModeSelector,
+  STEPS,
+  WizardStepIndicator,
+  buildToggleButtonSx,
+} from '../components/PromptWizardControls'
+import type { BuildMode } from '../components/PromptWizardControls'
 import { composePrompt } from '../lib/promptEngine'
 import type { PromptSections } from '../lib/promptEngine'
 import { findSkillsFromText } from '../services/skills'
 
-let clientModelLoader: Promise<typeof import('../lib/clientModel')> | null = null
+type ClientModelModule = {
+  getLastBackend: () => 'webgpu' | 'wasm' | null
+  isModelCached: () => Promise<boolean>
+  isWebGPUPreferred: () => boolean
+  prefetchModel: () => Promise<void>
+}
+
+let clientModelLoader: Promise<ClientModelModule> | null = null
 
 async function loadClientModel() {
-  if (import.meta.env.SSR) return null
   if (!clientModelLoader) {
     clientModelLoader = import('../lib/clientModel')
   }
@@ -50,54 +55,19 @@ async function loadClientModel() {
 
 export const Route = createFileRoute('/')({ component: App })
 
-export type BuildMode = 'app' | 'feature' | 'change' | 'bug'
 export type BuildApproach = 'one-shot' | 'multi-phase'
 
-export const STEPS = ['Mode', 'Approach', 'Keywords', 'Goal'] as const
-
-const BUILD_MODE_OPTIONS: Array<{
-  value: BuildMode
-  label: string
-  ariaLabel: string
-  icon: JSX.Element
-}> = [
-  {
-    value: 'app',
-    label: 'Full app',
-    ariaLabel: 'Full application',
-    icon: <AppsIcon fontSize="small" />,
-  },
-  {
-    value: 'feature',
-    label: 'Feature',
-    ariaLabel: 'Feature in app',
-    icon: <ExtensionIcon fontSize="small" />,
-  },
-  {
-    value: 'change',
-    label: 'Change',
-    ariaLabel: 'Change existing feature',
-    icon: <RepeatIcon fontSize="small" />,
-  },
-  {
-    value: 'bug',
-    label: 'Bug fix',
-    ariaLabel: 'Fix a bug',
-    icon: <BugReportIcon fontSize="small" />,
-  },
-]
-
 const PLACEHOLDER_IDEAS = [
-  'Draft a launch email for a new open-source CLI tool',
-  'Plan a workshop on prompt engineering basics',
-  'Design a retro terminal-style landing page',
-  'Create a study plan for learning Rust in 30 days',
-  'Outline a tutorial on deploying Next.js to Vercel',
-  'Generate interview questions for a staff-level frontend role',
-  'Write product copy for an AI meeting notes app',
-  'Map a data pipeline from ingestion to dashboard',
-  'Brainstorm quests for a text-based cyberpunk game',
-  'Summarize a research paper on diffusion models',
+  'Build a vaporwave portfolio for an indie game developer with a CMS-backed blog',
+  'Refactor a flaky checkout flow and list the exact test coverage needed before release',
+  'Design a pixel-neon landing page for a prompt toolkit with copy, layout, and interactions',
+  'Map a multi-phase plan for shipping a Rust CLI with docs, packaging, and CI',
+  'Write a sharp coding-agent prompt to debug a broken deployment on Vercel',
+  'Generate a launch brief for an AI note-taking app with positioning and feature priorities',
+  'Outline a tutorial series on shipping accessible web components with Storybook',
+  'Plan a cyberpunk text adventure with mechanics, lore arcs, and scene prompts',
+  'Turn research notes on diffusion models into a technical blog post outline',
+  'Create an internal migration plan from REST endpoints to typed server functions',
 ]
 
 type WizardState = {
@@ -126,158 +96,36 @@ type ChipInputProps = {
   label: string
 }
 
-const toggleButtonBaseSx = (theme: ReturnType<typeof useTheme>) => ({
-  textTransform: 'none',
-  border: '1px solid',
-  borderColor: alpha('#ffffff', 0.08),
-  color: alpha('#ffffff', 0.9),
-  backgroundColor: alpha('#ffffff', 0.08),
-  '&.Mui-selected': {
-    background: 'linear-gradient(120deg, #ff6b81, #ffb86c)',
-    color: '#0c0d16',
-    borderColor: alpha('#ffffff', 0.16),
-    '&:hover': {
-      background: 'linear-gradient(120deg, #ff7f92, #ffc07f)',
+const terminalFieldSx = {
+  '& .MuiInputLabel-root': {
+    color: 'rgba(214,242,255,0.75)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.08em',
+  },
+  '& .MuiInputLabel-root.Mui-focused': {
+    color: '#fff36b',
+  },
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 0,
+    color: '#fff7cc',
+    background:
+      'linear-gradient(180deg, rgba(7,3,19,0.96), rgba(18,10,35,0.92))',
+    '& fieldset': {
+      borderWidth: 2,
+      borderColor: 'rgba(22,242,255,0.55)',
+    },
+    '&:hover fieldset': {
+      borderColor: '#ff39d4',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#fff36b',
+      boxShadow: '0 0 16px rgba(255,243,107,0.2)',
     },
   },
-  '&:hover': {
-    backgroundColor: alpha('#ffffff', 0.06),
+  '& .MuiInputBase-input::placeholder': {
+    color: 'rgba(214,242,255,0.4)',
+    opacity: 1,
   },
-})
-
-const stepperSx = {
-  '& .MuiStepIcon-root': {
-    color: alpha('#ffffff', 0.25),
-  },
-  '& .Mui-active .MuiStepIcon-root': {
-    color: '#ff6b81',
-  },
-  '& .Mui-completed .MuiStepIcon-root': {
-    color: '#ffb86c',
-  },
-  '& .MuiStepLabel-label': {
-    color: alpha('#ffffff', 0.75),
-  },
-  '& .Mui-active .MuiStepLabel-label': {
-    color: '#ffffff',
-    fontWeight: 700,
-  },
-}
-
-export function WizardStepIndicator({
-  activeStep,
-  isMobile,
-}: {
-  activeStep: number
-  isMobile: boolean
-}) {
-  if (isMobile) {
-    return (
-      <Stack spacing={1.25}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Typography variant="overline" color="secondary">
-            Step {activeStep + 1} of {STEPS.length}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {STEPS[activeStep]}
-          </Typography>
-        </Stack>
-        <Stack direction="row" spacing={1} aria-label="Wizard steps">
-          {STEPS.map((label, index) => {
-            const isActive = index === activeStep
-            const isCompleted = index < activeStep
-
-            return (
-              <Box
-                key={label}
-                sx={{
-                  flex: 1,
-                  height: 8,
-                  borderRadius: 999,
-                  background: isActive
-                    ? 'linear-gradient(120deg, #ff6b81, #ffb86c)'
-                    : isCompleted
-                      ? alpha('#ffb86c', 0.9)
-                      : alpha('#ffffff', 0.16),
-                  transition: 'background 180ms ease',
-                }}
-              />
-            )
-          })}
-        </Stack>
-      </Stack>
-    )
-  }
-
-  return (
-    <Stepper activeStep={activeStep} alternativeLabel sx={stepperSx}>
-      {STEPS.map((label) => (
-        <Step key={label}>
-          <StepLabel>{label}</StepLabel>
-        </Step>
-      ))}
-    </Stepper>
-  )
-}
-
-export function BuildModeSelector({
-  value,
-  onChange,
-  isMobile,
-  theme,
-}: {
-  value: BuildMode
-  onChange: (_: React.MouseEvent<HTMLElement>, val: BuildMode | null) => void
-  isMobile: boolean
-  theme: ReturnType<typeof useTheme>
-}) {
-  return (
-    <ToggleButtonGroup
-      exclusive
-      value={value}
-      onChange={onChange}
-      fullWidth
-      color="primary"
-      aria-label="Build mode"
-      orientation={isMobile ? 'vertical' : 'horizontal'}
-      sx={{
-        display: 'grid',
-        gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(4, minmax(0, 1fr))',
-        gap: 1,
-        backgroundColor: 'transparent',
-        border: 0,
-        '& .MuiToggleButtonGroup-grouped': {
-          margin: 0,
-          border: 0,
-          borderRadius: 3,
-        },
-        '& .MuiToggleButton-root': {
-          ...toggleButtonBaseSx(theme),
-          minHeight: isMobile ? 72 : 48,
-          px: isMobile ? 1.5 : 2,
-          py: isMobile ? 1.25 : 1,
-          justifyContent: 'center',
-          gap: 1,
-          flexDirection: isMobile ? 'column' : 'row',
-          alignItems: 'center',
-          textAlign: 'center',
-          lineHeight: 1.2,
-          whiteSpace: 'normal',
-        },
-      }}
-    >
-      {BUILD_MODE_OPTIONS.map((option) => (
-        <ToggleButton
-          key={option.value}
-          value={option.value}
-          aria-label={option.ariaLabel}
-        >
-          {option.icon}
-          <Box component="span">{option.label}</Box>
-        </ToggleButton>
-      ))}
-    </ToggleButtonGroup>
-  )
 }
 
 function ChipInput({ values, onChange, label }: ChipInputProps) {
@@ -310,15 +158,25 @@ function ChipInput({ values, onChange, label }: ChipInputProps) {
         name={label.toLowerCase().replace(/\s+/g, '-')}
         placeholder="Type and press Enter"
         fullWidth
+        sx={terminalFieldSx}
       />
-      <Stack direction="row" spacing={1} flexWrap="wrap">
+      <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
         {values.map((k) => (
           <Chip
             key={k}
             label={k}
             onDelete={() => remove(k)}
-            color="secondary"
             variant="outlined"
+            sx={{
+              color: '#fff7cc',
+              borderColor: 'rgba(255,57,212,0.78)',
+              backgroundColor: 'rgba(22,10,35,0.8)',
+              borderRadius: 0,
+              boxShadow: '0 0 14px rgba(255,57,212,0.12)',
+              '& .MuiChip-deleteIcon': {
+                color: '#16f2ff',
+              },
+            }}
           />
         ))}
       </Stack>
@@ -378,29 +236,21 @@ function App() {
   const goalRef = useRef<HTMLTextAreaElement | null>(null)
 
   useEffect(() => {
-    let cancelled = false
-    ;(async () => {
+    const warmModel = async () => {
       try {
         const mod = await loadClientModel()
-        if (!mod || cancelled) return
         const cached = await mod.isModelCached()
-        if (cancelled) return
         setModelStatus(cached ? 'warming-cached' : 'warming')
         await mod.prefetchModel()
-        if (cancelled) return
         setModelStatus('ready')
         setBackend(mod.getLastBackend())
         setWebGpuPreferred(mod.isWebGPUPreferred())
       } catch (err) {
-        if (!cancelled) {
-          console.error(err)
-          setModelStatus('error')
-        }
+        console.error(err)
+        setModelStatus('error')
       }
-    })()
-    return () => {
-      cancelled = true
     }
+    void warmModel()
   }, [])
 
   useEffect(() => {
@@ -572,43 +422,69 @@ function App() {
   const stickyPreview = (
     <Paper
       ref={previewRef}
+      id="preview"
       sx={{
-        p: 3,
-        borderRadius: 3,
+        p: { xs: 2, sm: 3 },
+        borderRadius: 0,
         minHeight: 480,
         position: isDesktop ? 'sticky' : 'relative',
         top: isDesktop ? theme.spacing(2) : 'auto',
         width: '100%',
+        overflow: 'hidden',
       }}
     >
       <Stack
         direction="row"
         justifyContent="space-between"
         alignItems="center"
-        mb={1}
+        mb={1.5}
       >
         <Stack direction="row" spacing={1} alignItems="center">
-          <Typography variant="h6">Preview</Typography>
+          <Typography variant="h6" sx={{ color: '#fff36b' }}>
+            Output Deck
+          </Typography>
           {isStreaming && (
             <Chip
               size="small"
-              color="secondary"
               label="Streaming…"
               icon={<CircularProgress size={14} thickness={5} />}
+              sx={{
+                color: '#090312',
+                backgroundColor: '#16f2ff',
+                borderRadius: 0,
+              }}
             />
           )}
         </Stack>
         <Stack direction="row" spacing={1}>
           <Tooltip title="Copy prompt">
             <span>
-              <IconButton aria-label="Copy prompt" color="primary" onClick={copyPrompt}>
+              <IconButton
+                aria-label="Copy prompt"
+                color="primary"
+                onClick={copyPrompt}
+                sx={{
+                  border: '2px solid rgba(22,242,255,0.72)',
+                  borderRadius: 0,
+                  color: '#16f2ff',
+                }}
+              >
                 <ContentCopyIcon fontSize="small" />
               </IconButton>
             </span>
           </Tooltip>
           <Tooltip title="Download .txt">
             <span>
-              <IconButton aria-label="Download prompt" color="primary" onClick={downloadPrompt}>
+              <IconButton
+                aria-label="Download prompt"
+                color="primary"
+                onClick={downloadPrompt}
+                sx={{
+                  border: '2px solid rgba(255,57,212,0.72)',
+                  borderRadius: 0,
+                  color: '#ff39d4',
+                }}
+              >
                 <DownloadIcon fontSize="small" />
               </IconButton>
             </span>
@@ -617,7 +493,17 @@ function App() {
       </Stack>
       {loading && (
         <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-          <LinearProgress sx={{ flex: 1 }} />
+          <LinearProgress
+            sx={{
+              flex: 1,
+              height: 8,
+              borderRadius: 0,
+              bgcolor: 'rgba(255,255,255,0.08)',
+              '& .MuiLinearProgress-bar': {
+                background: 'linear-gradient(90deg, #16f2ff, #ff39d4, #fff36b)',
+              },
+            }}
+          />
           <Typography variant="caption" color="text.secondary">
             Streaming prompt…
           </Typography>
@@ -625,30 +511,32 @@ function App() {
       )}
       <Box
         sx={{
-          backgroundColor: 'rgba(255,255,255,0.04)',
-          border: '1px solid rgba(255,255,255,0.06)',
-          borderRadius: 2,
+          background:
+            'linear-gradient(180deg, rgba(4,2,12,0.98), rgba(11,6,23,0.95))',
+          border: '2px solid rgba(22,242,255,0.62)',
+          borderRadius: 0,
           p: 2,
           fontFamily:
-            '"DM Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
+            '"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace',
           fontSize: 14,
-          color: 'text.primary',
+          color: '#fff7cc',
           minHeight: 320,
           overflow: 'auto',
+          boxShadow: 'inset 0 0 0 1px rgba(255,243,107,0.15)',
         }}
       >
         <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
           {'```\n' + promptText + '\n```'}
         </ReactMarkdown>
       </Box>
-      <Divider sx={{ my: 2 }} />
-      <Typography variant="subtitle2" gutterBottom>
-        Detected skills (auto-attached)
+      <Divider sx={{ my: 2, borderColor: 'rgba(255,57,212,0.32)' }} />
+      <Typography variant="subtitle2" gutterBottom sx={{ color: '#16f2ff' }}>
+        Auto-detected skills
       </Typography>
       <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
         {skillBadges.length === 0 ? (
           <Typography variant="body2" color="text.secondary">
-            No framework-specific skills detected
+            No framework-specific skills detected yet
           </Typography>
         ) : (
           skillBadges.map((s) => (
@@ -656,7 +544,11 @@ function App() {
               key={s.skill}
               label={`${s.skill}`}
               variant="outlined"
-              color="default"
+              sx={{
+                color: '#fff7cc',
+                borderColor: 'rgba(255,243,107,0.72)',
+                borderRadius: 0,
+              }}
             />
           ))
         )}
@@ -669,31 +561,44 @@ function App() {
       case 0:
         return (
           <Stack spacing={2}>
-            <Typography variant="subtitle1">What are you building?</Typography>
+            <Typography variant="subtitle1">Choose your build cartridge</Typography>
             <BuildModeSelector
               value={wizard.buildMode}
               onChange={handleBuildModeChange}
               isMobile={isMobile}
-              theme={theme}
             />
           </Stack>
         )
       case 1:
         return (
           <Stack spacing={2}>
-            <Typography variant="subtitle1">Build approach</Typography>
+            <Typography variant="subtitle1">Select the run mode</Typography>
             <ToggleButtonGroup
               exclusive
               value={wizard.buildApproach}
               onChange={handleBuildApproachChange}
               fullWidth
               color="primary"
-              sx={{ '& .MuiToggleButton-root': toggleButtonBaseSx(theme) }}
+              sx={{
+                '& .MuiToggleButton-root': {
+                  borderRadius: 0,
+                },
+              }}
             >
-              <ToggleButton value="one-shot" aria-label="One shot">
+              <ToggleButton
+                value="one-shot"
+                aria-label="One shot"
+                selected={wizard.buildApproach === 'one-shot'}
+                sx={buildToggleButtonSx(wizard.buildApproach === 'one-shot')}
+              >
                 <RefreshIcon fontSize="small" />&nbsp;One shot
               </ToggleButton>
-              <ToggleButton value="multi-phase" aria-label="Multi phase">
+              <ToggleButton
+                value="multi-phase"
+                aria-label="Multi phase"
+                selected={wizard.buildApproach === 'multi-phase'}
+                sx={buildToggleButtonSx(wizard.buildApproach === 'multi-phase')}
+              >
                 <TimelineIcon fontSize="small" />&nbsp;Multi-phase
               </ToggleButton>
             </ToggleButtonGroup>
@@ -712,6 +617,7 @@ function App() {
                   }
                   autoComplete="off"
                   name="phase-count"
+                  sx={terminalFieldSx}
                 />
                 <ChipInput
                   values={wizard.milestones}
@@ -725,7 +631,7 @@ function App() {
       case 2:
         return (
           <Stack spacing={2}>
-            <Typography variant="subtitle1">Keywords (chips)</Typography>
+            <Typography variant="subtitle1">Load keywords and themes</Typography>
             <ChipInput
               values={wizard.keywords}
               onChange={(next) => setWizard((w) => ({ ...w, keywords: next }))}
@@ -737,7 +643,7 @@ function App() {
       default:
         return (
           <Stack spacing={2}>
-            <Typography variant="subtitle1">Goal / initial prompt</Typography>
+            <Typography variant="subtitle1">Type the mission brief</Typography>
             <TextField
               label="Your goal"
               multiline
@@ -754,6 +660,7 @@ function App() {
               fullWidth
               name="goal"
               autoComplete="on"
+              sx={terminalFieldSx}
             />
           </Stack>
         )
@@ -768,7 +675,7 @@ function App() {
             position: 'fixed',
             inset: 0,
             zIndex: 2000,
-            bgcolor: 'rgba(12,13,22,0.92)',
+            bgcolor: 'rgba(6,2,16,0.94)',
             backdropFilter: 'blur(8px)',
             display: 'flex',
             flexDirection: 'column',
@@ -781,7 +688,7 @@ function App() {
         >
           <CircularProgress color="inherit" size={56} thickness={4} />
           <Typography variant="h6" fontWeight={700}>
-            Loading prompt generator
+            Booting Prompt Arcade
           </Typography>
         </Box>
       )}
@@ -790,8 +697,8 @@ function App() {
         sx={{
           minHeight: '100vh',
           background:
-            'radial-gradient(circle at 20% 20%, rgba(255,107,129,0.16), transparent 30%), radial-gradient(circle at 80% 0%, rgba(255,184,108,0.14), transparent 26%), #0c0d16',
-          pb: 6,
+            'radial-gradient(circle at 20% 20%, rgba(255,57,212,0.16), transparent 30%), radial-gradient(circle at 80% 0%, rgba(22,242,255,0.14), transparent 26%), #090312',
+          pb: 8,
         }}
       >
         <Box
@@ -806,7 +713,7 @@ function App() {
               inset: 0,
               background:
                 'radial-gradient(circle at 50% -20%, rgba(255,255,255,0.08), transparent 40%), repeating-linear-gradient(90deg, rgba(255,255,255,0.04), rgba(255,255,255,0.04) 1px, transparent 1px, transparent 18px)',
-              opacity: 0.35,
+              opacity: 0.25,
               pointerEvents: 'none',
             }}
           />
@@ -821,16 +728,91 @@ function App() {
               px: { xs: 2.5, md: 4 },
             }}
           >
-            <Stack spacing={2} pt={{ xs: 4, md: 6 }} pb={2}>
-              <Typography variant="overline" color="secondary">
-                Prompt Builder
-              </Typography>
-              <Typography variant="h3" fontWeight={800}>
-                Retro synthwave prompt composer for coding agents
-              </Typography>
-              <Typography variant="body1" color="text.secondary" maxWidth={780}>
-                Feed a rough idea, move through a quick wizard, and get a tighter agent-friendly prompt with clear objective, constraints, checks, and detected skills. Runs fully in your browser via Transformers.js.
-              </Typography>
+            <Stack spacing={3} pt={{ xs: 4, md: 6 }} pb={3} width="min(1080px, 100%)">
+              <Box
+                sx={{
+                  border: '2px solid #fff36b',
+                  boxShadow: '0 0 0 2px rgba(22,242,255,0.45), 0 0 22px rgba(255,57,212,0.32)',
+                  background: 'rgba(6,3,18,0.88)',
+                  overflow: 'hidden',
+                  px: 2,
+                  py: 1.5,
+                }}
+              >
+                <Box className="marquee-text" sx={{ display: 'inline-flex', gap: 6, pr: 6, color: '#fff36b', fontSize: { xs: '0.62rem', sm: '0.72rem' } }}>
+                  <span>Welcome to the neon prompt arcade</span>
+                  <span>Welcome to the neon prompt arcade</span>
+                  <span>Welcome to the neon prompt arcade</span>
+                </Box>
+              </Box>
+
+              <Stack spacing={2} alignItems="flex-start">
+                <Typography variant="overline" sx={{ color: '#16f2ff', letterSpacing: '0.22em' }}>
+                  Browser Prompt Builder
+                </Typography>
+                <Typography
+                  variant="h3"
+                  fontWeight={800}
+                  sx={{
+                    maxWidth: 980,
+                    lineHeight: { xs: 1.5, md: 1.35 },
+                    color: '#ff39d4',
+                    textShadow:
+                      '0 0 10px rgba(255,57,212,0.85), 0 0 28px rgba(255,57,212,0.48)',
+                  }}
+                >
+                  Next Level Prompts
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    maxWidth: 760,
+                    color: 'text.secondary',
+                  }}
+                >
+                  Feed in a rough build idea, move through the wizard, and leave
+                  with a cleaner coding-agent brief packed with objectives,
+                  constraints, milestones, and skill hints. The whole thing runs
+                  client-side, wrapped in a full neon retro shell instead of starter
+                  kit chrome.
+                </Typography>
+              </Stack>
+
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                <Chip
+                  label={`Model ${modelStatus}`}
+                  sx={{
+                    color: '#fff7cc',
+                    borderColor: 'rgba(255,243,107,0.72)',
+                    borderRadius: 0,
+                  }}
+                  variant="outlined"
+                />
+                <Chip
+                  label={`Backend ${backend ?? 'pending'}`}
+                  sx={{
+                    color: '#d6f2ff',
+                    borderColor: 'rgba(22,242,255,0.72)',
+                    borderRadius: 0,
+                  }}
+                  variant="outlined"
+                />
+                <Chip
+                  label={
+                    webGpuPreferred == null
+                      ? 'GPU preference scanning'
+                      : webGpuPreferred
+                        ? 'WebGPU preferred'
+                        : 'WASM fallback ready'
+                  }
+                  sx={{
+                    color: '#ffb5ef',
+                    borderColor: 'rgba(255,57,212,0.72)',
+                    borderRadius: 0,
+                  }}
+                  variant="outlined"
+                />
+              </Stack>
             </Stack>
 
             <Stack
@@ -842,7 +824,7 @@ function App() {
               <Paper
                 sx={{
                   p: { xs: 2.25, sm: 3 },
-                  borderRadius: 3,
+                  borderRadius: 0,
                   width: 'min(960px, 100%)',
                 }}
               >
@@ -894,7 +876,7 @@ function App() {
                   </Stack>
                   {!isDesktop && preview && (
                     <Button variant="text" onClick={scrollToPreview}>
-                      Scroll to preview
+                      Jump to output
                     </Button>
                   )}
                 </Stack>

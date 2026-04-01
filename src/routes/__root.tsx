@@ -5,7 +5,6 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
-import Footer from '../components/Footer'
 
 import TanStackQueryProvider from '../integrations/tanstack-query/root-provider'
 
@@ -33,7 +32,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'Next Level Prompts | Neon Prompt Arcade',
       },
     ],
     links: [
@@ -52,7 +51,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
       {
         rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap',
+        href: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Press+Start+2P&display=swap',
       },
     ],
   }),
@@ -66,11 +65,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <HeadContent />
       </head>
-      <body className="font-sans antialiased [overflow-wrap:anywhere]" style={{ background: 'radial-gradient(circle at 10% 20%, rgba(255,107,129,0.08), transparent 25%), radial-gradient(circle at 90% 10%, rgba(255,184,108,0.08), transparent 20%), #0c0d16' }}>
+      <body className="font-sans antialiased [overflow-wrap:anywhere]">
         <AppThemeProvider>
           <TanStackQueryProvider>
             {children}
-            <Footer />
             <TanStackDevtools
               config={{
                 position: 'bottom-right',
