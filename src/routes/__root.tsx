@@ -5,6 +5,7 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
+import { Analytics } from '@vercel/analytics/react'
 
 import TanStackQueryProvider from '../integrations/tanstack-query/root-provider'
 
@@ -100,6 +101,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             />
           </TanStackQueryProvider>
         </AppThemeProvider>
+        <Analytics />
         <Scripts />
       </body>
     </html>
