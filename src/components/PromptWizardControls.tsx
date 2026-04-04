@@ -7,7 +7,7 @@ import { alpha } from '@mui/material/styles'
 
 export type BuildMode = 'app' | 'feature' | 'change' | 'bug'
 
-export const STEPS = ['Mode', 'Approach', 'Keywords', 'Goal'] as const
+export const STEPS = ['Mode', 'Approach', 'Context', 'Brief'] as const
 
 const BUILD_MODE_OPTIONS: Array<{
   value: BuildMode
@@ -17,26 +17,26 @@ const BUILD_MODE_OPTIONS: Array<{
 }> = [
   {
     value: 'app',
-    label: 'Full app',
-    ariaLabel: 'Full application',
+    label: 'New app',
+    ariaLabel: 'New app',
     icon: <AppsIcon fontSize="small" />,
   },
   {
     value: 'feature',
     label: 'Feature',
-    ariaLabel: 'Feature in app',
+    ariaLabel: 'Feature',
     icon: <ExtensionIcon fontSize="small" />,
   },
   {
     value: 'change',
-    label: 'Change',
-    ariaLabel: 'Change existing feature',
+    label: 'Existing change',
+    ariaLabel: 'Existing change',
     icon: <RepeatIcon fontSize="small" />,
   },
   {
     value: 'bug',
     label: 'Bug fix',
-    ariaLabel: 'Fix a bug',
+    ariaLabel: 'Bug fix',
     icon: <BugReportIcon fontSize="small" />,
   },
 ]

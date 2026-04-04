@@ -35,7 +35,13 @@ import {
 import type { BuildMode } from '../components/PromptWizardControls'
 import { composePrompt } from '../lib/promptEngine'
 import type { PromptSections } from '../lib/promptEngine'
-import { findSkillsFromText } from '../services/skills'
+import {
+  DEFAULT_WIZARD_STATE,
+  getPersistedWizardState,
+  hydrateWizardState,
+} from '../lib/wizardState'
+import type { BuildApproach, WizardState } from '../lib/wizardState'
+import type { SkillMatch } from '../services/skills'
 
 type ClientModelModule = {
   getLastBackend: () => 'webgpu' | 'wasm' | null
@@ -55,38 +61,18 @@ async function loadClientModel() {
 
 export const Route = createFileRoute('/')({ component: App })
 
-export type BuildApproach = 'one-shot' | 'multi-phase'
-
 const PLACEHOLDER_IDEAS = [
-  'Build a vaporwave portfolio for an indie game developer with a CMS-backed blog',
-  'Refactor a flaky checkout flow and list the exact test coverage needed before release',
-  'Design a pixel-neon landing page for a prompt toolkit with copy, layout, and interactions',
-  'Map a multi-phase plan for shipping a Rust CLI with docs, packaging, and CI',
-  'Write a sharp coding-agent prompt to debug a broken deployment on Vercel',
-  'Generate a launch brief for an AI note-taking app with positioning and feature priorities',
-  'Outline a tutorial series on shipping accessible web components with Storybook',
-  'Plan a cyberpunk text adventure with mechanics, lore arcs, and scene prompts',
-  'Turn research notes on diffusion models into a technical blog post outline',
-  'Create an internal migration plan from REST endpoints to typed server functions',
+  'Build a small todo app and ask the coding agent for an MVP plan before any edits',
+  'Fix a flaky OAuth callback bug in our Next.js app and require guard tests',
+  'Plan a phased rollout for adding dark mode to an existing React dashboard',
+  'Add a Stripe webhook handler and make the coding agent inspect current API patterns first',
+  'Refactor a messy data-fetching component while preserving behavior and existing conventions',
+  'Create a user profile endpoint and require tests, lint, build, and manual verification',
+  'Plan a safe Supabase schema migration with explicit rollback and deployment checks',
+  'Investigate a production-only Vercel failure and return a repo-grounded plan first',
+  'Integrate a background queue worker and call out env vars, failure modes, and risks',
+  'Add search to an existing app without over-scoping the first implementation',
 ]
-
-type WizardState = {
-  buildMode: BuildMode
-  buildApproach: BuildApproach
-  phaseCount: number
-  milestones: string[]
-  keywords: string[]
-  seed: string
-}
-
-const DEFAULT_STATE: WizardState = {
-  buildMode: 'feature',
-  buildApproach: 'one-shot',
-  phaseCount: 3,
-  milestones: [],
-  keywords: [],
-  seed: '',
-}
 
 const STORAGE_KEY = 'nlp-wizard-state'
 
@@ -185,21 +171,21 @@ function ChipInput({ values, onChange, label }: ChipInputProps) {
 }
 
 function loadState(): WizardState {
-  if (typeof window === 'undefined') return DEFAULT_STATE
+  if (typeof window === 'undefined') return DEFAULT_WIZARD_STATE
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return DEFAULT_STATE
+    if (!raw) return DEFAULT_WIZARD_STATE
     const parsed = JSON.parse(raw)
-    return { ...DEFAULT_STATE, ...parsed }
+    return hydrateWizardState(parsed)
   } catch {
-    return DEFAULT_STATE
+    return DEFAULT_WIZARD_STATE
   }
 }
 
 function saveState(state: WizardState) {
   if (typeof window === 'undefined') return
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(getPersistedWizardState(state)))
   } catch {
     /* ignore */
   }
@@ -215,9 +201,7 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<PromptSections | null>(null)
-  const [skillBadges, setSkillBadges] = useState<
-    { skill: string; reason: string }[]
-  >([])
+  const [skillBadges, setSkillBadges] = useState<SkillMatch[]>([])
   const [isStreaming, setIsStreaming] = useState(false)
   const [toast, setToast] = useState<{
     open: boolean
@@ -295,16 +279,17 @@ function App() {
           buildApproach: state.buildApproach,
           phaseCount: state.buildApproach === 'multi-phase' ? state.phaseCount : undefined,
           milestones: state.buildApproach === 'multi-phase' ? state.milestones : undefined,
+          codebaseContext: state.codebaseContext,
+          constraints: state.constraints,
+          verification: state.verification,
+          nonGoals: state.nonGoals,
           multiPhasePreference: 'ask',
         })
         setPreview(result)
-        const skills = findSkillsFromText(
-          `${state.seed} ${state.keywords.join(' ')} ${result.middle}`,
-        )
-        setSkillBadges(skills)
+        setSkillBadges(result.skills)
         setToast({
           open: true,
-          message: 'Prompt streamed successfully',
+          message: 'Kickoff prompt ready',
           severity: 'success',
         })
       } catch (err: any) {
@@ -336,7 +321,7 @@ function App() {
   }, [])
 
   const handleReset = useCallback(() => {
-    setWizard(DEFAULT_STATE)
+    setWizard(DEFAULT_WIZARD_STATE)
     setActiveStep(0)
     setPreview(null)
     setSkillBadges([])
@@ -359,7 +344,7 @@ function App() {
   )
 
   const promptText = useMemo(
-    () => preview?.fullPrompt ?? 'Your composed prompt will appear here.',
+    () => preview?.copyPrompt ?? 'Your coding-agent kickoff prompt will appear here.',
     [preview],
   )
 
@@ -409,7 +394,7 @@ function App() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'next-level-prompt.txt'
+    a.download = 'coding-agent-kickoff-prompt.txt'
     a.click()
     URL.revokeObjectURL(url)
   }, [promptText])
@@ -530,8 +515,48 @@ function App() {
         </ReactMarkdown>
       </Box>
       <Divider sx={{ my: 2, borderColor: 'rgba(255,57,212,0.32)' }} />
+      <Stack spacing={2} mb={2}>
+        <Box>
+          <Typography variant="subtitle2" gutterBottom sx={{ color: '#16f2ff' }}>
+            Missing context
+          </Typography>
+          {preview?.missingContext?.length ? (
+            <Stack spacing={0.75}>
+              {preview.missingContext.map((item) => (
+                <Typography key={item} variant="body2" color="text.secondary">
+                  - {item}
+                </Typography>
+              ))}
+            </Stack>
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              No obvious gaps detected from the current brief.
+            </Typography>
+          )}
+        </Box>
+
+        <Box>
+          <Typography variant="subtitle2" gutterBottom sx={{ color: '#fff36b' }}>
+            Assumptions baked in
+          </Typography>
+          {preview?.assumptions?.length ? (
+            <Stack spacing={0.75}>
+              {preview.assumptions.map((item) => (
+                <Typography key={item} variant="body2" color="text.secondary">
+                  - {item}
+                </Typography>
+              ))}
+            </Stack>
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              No extra assumptions were needed.
+            </Typography>
+          )}
+        </Box>
+      </Stack>
+      <Divider sx={{ my: 2, borderColor: 'rgba(22,242,255,0.25)' }} />
       <Typography variant="subtitle2" gutterBottom sx={{ color: '#16f2ff' }}>
-        Auto-detected skills
+        Suggested skills / patterns
       </Typography>
       <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
         {skillBadges.length === 0 ? (
@@ -541,8 +566,8 @@ function App() {
         ) : (
           skillBadges.map((s) => (
             <Chip
-              key={s.skill}
-              label={`${s.skill}`}
+              key={`${s.skill}-${s.reason}`}
+              label={`${s.skill} · ${s.reason}`}
               variant="outlined"
               sx={{
                 color: '#fff7cc',
@@ -561,7 +586,7 @@ function App() {
       case 0:
         return (
           <Stack spacing={2}>
-            <Typography variant="subtitle1">Choose your build cartridge</Typography>
+            <Typography variant="subtitle1">Choose the coding task shape</Typography>
             <BuildModeSelector
               value={wizard.buildMode}
               onChange={handleBuildModeChange}
@@ -572,7 +597,7 @@ function App() {
       case 1:
         return (
           <Stack spacing={2}>
-            <Typography variant="subtitle1">Select the run mode</Typography>
+            <Typography variant="subtitle1">Select the planning depth</Typography>
             <ToggleButtonGroup
               exclusive
               value={wizard.buildApproach}
@@ -622,7 +647,7 @@ function App() {
                 <ChipInput
                   values={wizard.milestones}
                   onChange={(next) => setWizard((w) => ({ ...w, milestones: next }))}
-                  label="Add milestone"
+                  label="Add phase checkpoint"
                 />
               </Stack>
             )}
@@ -631,11 +656,11 @@ function App() {
       case 2:
         return (
           <Stack spacing={2}>
-            <Typography variant="subtitle1">Load keywords and themes</Typography>
+            <Typography variant="subtitle1">Load stack, tools, and file hints</Typography>
             <ChipInput
               values={wizard.keywords}
               onChange={(next) => setWizard((w) => ({ ...w, keywords: next }))}
-              label="Keywords"
+              label="Stack / tools / files"
             />
           </Stack>
         )
@@ -643,9 +668,9 @@ function App() {
       default:
         return (
           <Stack spacing={2}>
-            <Typography variant="subtitle1">Type the mission brief</Typography>
+            <Typography variant="subtitle1">Write the task brief and repo context</Typography>
             <TextField
-              label="Your goal"
+              label="Task brief"
               multiline
               minRows={4}
               value={wizard.seed}
@@ -661,6 +686,38 @@ function App() {
               name="goal"
               autoComplete="on"
               sx={terminalFieldSx}
+            />
+            <TextField
+              label="Repository context (optional)"
+              multiline
+              minRows={3}
+              value={wizard.codebaseContext}
+              onChange={(e) =>
+                setWizard((w) => ({
+                  ...w,
+                  codebaseContext: e.target.value,
+                }))
+              }
+              placeholder="Relevant folders, files, architecture notes, existing examples, or areas the coding agent should inspect first."
+              fullWidth
+              name="codebase-context"
+              autoComplete="off"
+              sx={terminalFieldSx}
+            />
+            <ChipInput
+              values={wizard.constraints}
+              onChange={(next) => setWizard((w) => ({ ...w, constraints: next }))}
+              label="Constraints"
+            />
+            <ChipInput
+              values={wizard.verification}
+              onChange={(next) => setWizard((w) => ({ ...w, verification: next }))}
+              label="Verification commands / done criteria"
+            />
+            <ChipInput
+              values={wizard.nonGoals}
+              onChange={(next) => setWizard((w) => ({ ...w, nonGoals: next }))}
+              label="Non-goals"
             />
           </Stack>
         )
@@ -748,7 +805,7 @@ function App() {
 
               <Stack spacing={2} alignItems="flex-start">
                 <Typography variant="overline" sx={{ color: '#16f2ff', letterSpacing: '0.22em' }}>
-                  Browser Prompt Builder
+                  Coding-Agent Prompt Builder
                 </Typography>
                 <Typography
                   variant="h3"
@@ -770,11 +827,10 @@ function App() {
                     color: 'text.secondary',
                   }}
                 >
-                  Feed in a rough build idea, move through the wizard, and leave
-                  with a cleaner coding-agent brief packed with objectives,
-                  constraints, milestones, and skill hints. The whole thing runs
-                  client-side, wrapped in a full neon retro shell instead of starter
-                  kit chrome.
+                  Feed in a rough software task, add a little repo context, and
+                  leave with a copy-ready kickoff prompt for a coding agent. The
+                  output is plan-first, verification-aware, and tuned to push the
+                  agent toward repo exploration before any code changes.
                 </Typography>
               </Stack>
 

@@ -132,6 +132,8 @@ type GenerationHints = {
   repetition_penalty?: number
 }
 
+export const DEFAULT_GENERATION_TIMEOUT_MS = 8000
+
 export async function generateClientText(prompt: string, overrides?: GenerationHints) {
   if (typeof window === 'undefined')
     throw new Error('Client model unavailable on server')
@@ -149,6 +151,27 @@ export async function generateClientText(prompt: string, overrides?: GenerationH
 
   const text = Array.isArray(result) ? (result[0]?.generated_text ?? '') : ''
   return text
+}
+
+export async function generateClientTextWithTimeout(
+  prompt: string,
+  overrides?: GenerationHints,
+  timeoutMs = DEFAULT_GENERATION_TIMEOUT_MS,
+) {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null
+
+  try {
+    return await Promise.race([
+      generateClientText(prompt, overrides),
+      new Promise<string>((_, reject) => {
+        timeoutId = setTimeout(() => {
+          reject(new Error(`Client generation timed out after ${timeoutMs}ms`))
+        }, timeoutMs)
+      }),
+    ])
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId)
+  }
 }
 
 export async function forceRefetchModel() {

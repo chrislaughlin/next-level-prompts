@@ -1,27 +1,52 @@
 export const PROMPT_EVAL_SAMPLES = [
   {
-    label: 'code bugfix',
-    seed: 'Fix flaky login redirect bug in our Next.js app after OAuth callback',
-    keywords: ['nextjs', 'auth', 'bug'],
+    label: 'greenfield mvp',
+    seed: 'Build a todo app',
+    keywords: ['react', 'vite'],
   },
   {
-    label: 'writing brief',
-    seed: 'Write a product update email about the new autosave feature for beta users',
-    keywords: ['email', 'changelog'],
+    label: 'bugfix',
+    seed: 'Fix a login bug in a React app',
+    keywords: ['react', 'auth', 'oauth'],
   },
   {
-    label: 'design task',
-    seed: 'Design a responsive dashboard for tracking carbon footprint by project',
-    keywords: ['design', 'figma'],
+    label: 'integration api',
+    seed: 'Create an API endpoint for user profiles',
+    keywords: ['api', 'typescript'],
   },
   {
-    label: 'research',
-    seed: 'Compare open-source feature flag services for GDPR compliance',
-    keywords: ['research', 'compliance'],
+    label: 'dashboard enhancement',
+    seed: 'Add dark mode to a dashboard',
+    keywords: ['dashboard', 'theme'],
   },
   {
-    label: 'data',
-    seed: 'Query monthly active users per workspace with churn reasons from the events table',
-    keywords: ['sql', 'analytics'],
+    label: 'data integration',
+    seed: 'Plan a safe Supabase schema migration',
+    keywords: ['supabase', 'postgres', 'migration'],
+  },
+  {
+    label: 'deployment issue',
+    seed: 'Investigate a production-only Vercel failure',
+    keywords: ['vercel', 'deployment', 'logs'],
+  },
+  {
+    label: 'webhook integration',
+    seed: 'Add a Stripe webhook handler',
+    keywords: ['stripe', 'webhook'],
+  },
+  {
+    label: 'queue worker',
+    seed: 'Integrate a background queue worker',
+    keywords: ['worker', 'queue', 'serverless'],
+  },
+  {
+    label: 'refactor',
+    seed: 'Refactor a messy data-fetching component',
+    keywords: ['react', 'refactor'],
+  },
+  {
+    label: 'search feature',
+    seed: 'Add search to an existing app',
+    keywords: ['feature', 'existing'],
   },
 ]

@@ -1,3 +1,6 @@
+import { findSkillsFromText } from '../services/skills.ts'
+import type { SkillMatch } from '../services/skills.ts'
+
 export type PromptRequest = {
   seed: string
   keywords?: string[]
@@ -5,323 +8,562 @@ export type PromptRequest = {
   buildApproach?: 'one-shot' | 'multi-phase'
   phaseCount?: number
   milestones?: string[]
-  multiPhasePreference?: 'ask' | 'force' | 'skip' // kept for backward compatibility
+  multiPhasePreference?: 'ask' | 'force' | 'skip'
+  codebaseContext?: string
+  constraints?: string[]
+  verification?: string[]
+  nonGoals?: string[]
 }
+
+export type TaskArchetype =
+  | 'greenfield'
+  | 'feature'
+  | 'bugfix'
+  | 'refactor'
+  | 'integration'
 
 export type PromptSections = {
-  starter: string
-  middle: string
-  questions: string[]
-  skills: string[]
-  grillMe: string
+  archetype: TaskArchetype
+  copyPrompt: string
   fullPrompt: string
+  missingContext: string[]
+  assumptions: string[]
+  skills: SkillMatch[]
 }
-
-type TaskDomain = 'code' | 'writing' | 'design' | 'research' | 'data' | 'general'
 
 type TaskProfile = {
-  domain: TaskDomain
-  deliverableHint: string
-  constraints: string[]
-  formatHint: string
-  questions: string[]
-  checks: string[]
+  archetype: TaskArchetype
+  missionTemplate: (seed: string) => string
+  workingRules: string[]
+  expectedOutput: string[]
+  verification: string[]
+  missingContext: string[]
 }
 
-const SKILL_MAP: Record<string, string> = {
-  react: 'react-best-practices',
-  next: 'nextjs',
-  nextjs: 'nextjs',
-  supabase: 'supabase-postgres-best-practices',
-  postgres: 'supabase-postgres-best-practices',
-  stripe: 'stripe-best-practices',
-  figma: 'figma',
-  tailwind: 'shadcn',
-  mui: 'mui',
-  vercel: 'deploy-to-vercel',
-  auth: 'auth',
-  api: 'vercel-functions',
-  ai: 'ai-sdk',
-  llm: 'ai-sdk',
+const HYPE_WORDS = [
+  'awesome',
+  'amazing',
+  'incredible',
+  'revolutionary',
+  'synergy',
+  'epic',
+  'game-changing',
+]
+
+const BASE_WORKING_RULES = [
+  'Explore the repository before proposing changes.',
+  'Inspect existing patterns, architecture, and conventions before suggesting a solution.',
+  'Proceed with reasonable assumptions when details are missing, and call those assumptions out explicitly.',
+  'Prefer minimal, convention-preserving changes over broad rewrites.',
+  'Return a plan before editing files, and stop for approval before implementation.',
+]
+
+const BASE_EXPECTED_OUTPUT = [
+  'A short understanding of the task in repository terms.',
+  'The files, directories, or subsystems that likely need inspection.',
+  'A concrete implementation plan that another engineer or agent could execute.',
+  'Key risks, dependencies, and assumptions.',
+]
+
+const BASE_VERIFICATION = [
+  'Describe the checks you would run before claiming the work is complete.',
+  'Include relevant tests, linting, build checks, and manual validation.',
+  'If any verification step is blocked, say exactly what information or command is missing.',
+]
+
+const BASE_SKILL_PATTERNS = [
+  'Explore first, then plan, then code.',
+  'Use a verification loop before claiming completion.',
+  'Prefer existing patterns over introducing new abstractions.',
+]
+
+const ARCHETYPE_PROFILES: Record<TaskArchetype, TaskProfile> = {
+  greenfield: {
+    archetype: 'greenfield',
+    missionTemplate: (seed) =>
+      `Explore the repository and prepare a minimal, shippable implementation plan for ${seed}.`,
+    workingRules: [
+      'Keep the first version focused on an MVP and protect scope boundaries.',
+      'Treat unrelated enhancements as future work unless they are required to ship the core flow.',
+    ],
+    expectedOutput: [
+      'An MVP scope with the primary user flow and explicit non-goals.',
+      'A recommended implementation sequence for the first release.',
+    ],
+    verification: [
+      'Cover the core happy path and at least one likely failure mode.',
+    ],
+    missingContext: [
+      'Target user flow or primary use case for version 1.',
+      'Scope boundaries or non-goals to avoid overbuilding.',
+    ],
+  },
+  feature: {
+    archetype: 'feature',
+    missionTemplate: (seed) =>
+      `Explore the repository and prepare a plan to implement ${seed} with minimal, convention-preserving changes.`,
+    workingRules: [
+      'Preserve current behavior outside the requested scope.',
+      'Call out regression risks for adjacent flows.',
+    ],
+    expectedOutput: [
+      'The likely touch points and the safest order for making the change.',
+      'Regression risks and compatibility notes.',
+    ],
+    verification: [
+      'List the specific behavior that should work before and after the change.',
+    ],
+    missingContext: [
+      'Relevant files, directories, or existing examples to inspect first.',
+      'Acceptance criteria that define when the feature is done.',
+    ],
+  },
+  bugfix: {
+    archetype: 'bugfix',
+    missionTemplate: (seed) =>
+      `Explore the repository and prepare a safe bugfix plan for ${seed}, including regression protection.`,
+    workingRules: [
+      'Find the most likely reproduction path and the smallest safe fix.',
+      'Preserve intended behavior while eliminating the defect.',
+    ],
+    expectedOutput: [
+      'Likely repro steps, expected vs actual behavior, and probable root-cause areas.',
+      'Guard tests or checks that reduce the chance of the bug returning.',
+    ],
+    verification: [
+      'Verify the bug can be reproduced before the fix and is covered after the fix.',
+    ],
+    missingContext: [
+      'Repro steps, logs, or expected-vs-actual behavior.',
+      'Any failing tests, screenshots, or error messages tied to the bug.',
+    ],
+  },
+  refactor: {
+    archetype: 'refactor',
+    missionTemplate: (seed) =>
+      `Explore the repository and prepare a safe refactor plan for ${seed} without changing intended behavior.`,
+    workingRules: [
+      'Preserve runtime behavior and external contracts unless the task says otherwise.',
+      'Be explicit about invariants that must hold during and after the refactor.',
+    ],
+    expectedOutput: [
+      'The current pain points, the invariants to preserve, and the safest migration sequence.',
+      'A rollback or containment strategy if the refactor touches high-risk areas.',
+    ],
+    verification: [
+      'Show how behavior parity will be checked after the refactor.',
+    ],
+    missingContext: [
+      'Current pain points or the reason the refactor is needed.',
+      'Behavioral invariants that must not change.',
+    ],
+  },
+  integration: {
+    archetype: 'integration',
+    missionTemplate: (seed) =>
+      `Explore the repository and prepare an integration plan for ${seed} that respects existing contracts and operational constraints.`,
+    workingRules: [
+      'Inspect interfaces, auth boundaries, env vars, and deployment/runtime constraints before suggesting changes.',
+      'Call out failure modes, rollback concerns, and external dependencies.',
+    ],
+    expectedOutput: [
+      'The relevant interfaces, contracts, env vars, and dependency touch points.',
+      'Integration risks, failure modes, and operational considerations.',
+    ],
+    verification: [
+      'Include contract validation, integration checks, and deployment/runtime verification where relevant.',
+    ],
+    missingContext: [
+      'External services, API contracts, auth requirements, or env vars involved.',
+      'Commands or environments needed to validate the integration.',
+    ],
+  },
 }
-
-const HYPE_WORDS = ['awesome', 'amazing', 'incredible', 'revolutionary', 'synergy', 'epic', 'game-changing']
-
-const BASE_CONSTRAINTS = [
-  'Preserve the user intent; do not invent new features or data.',
-  'Keep wording plain, direct, and concise (no hype or filler).',
-  'Prefer bullet lists over long paragraphs; keep under ~180 words.',
-]
-
-const QUALITY_BAR = [
-  'State the objective first, then inputs/constraints, then deliverable.',
-  'Make acceptance checks concrete and verifiable.',
-  'If critical information is missing, ask at most 1-2 short blocking questions.',
-]
-
-const DOMAIN_RULES: { domain: TaskDomain; keywords: string[]; deliverableHint: string; constraints?: string[]; questions?: string[]; formatHint?: string; checks?: string[] }[] = [
-  {
-    domain: 'code',
-    keywords: ['api', 'endpoint', 'bug', 'fix', 'typescript', 'ts', 'javascript', 'component', 'next', 'react', 'function', 'handler'],
-    deliverableHint: 'Return a concise plan plus code-level guidance or patch outline.',
-    constraints: [
-      'Include code fences with language tags when showing code.',
-      'Prioritise correctness, security, and testability over speed.',
-    ],
-    questions: [
-      'Which environment, framework version, and data sources are in scope?',
-      'Any acceptance tests or error cases that must be handled?',
-    ],
-    formatHint: 'Use sections: Objective, Context, Steps, Deliverable, Checks.',
-  },
-  {
-    domain: 'writing',
-    keywords: ['write', 'blog', 'article', 'post', 'copy', 'email', 'draft', 'summarize'],
-    deliverableHint: 'Return an outline and tone guardrails plus the final writing task.',
-    constraints: ['Match the requested voice; avoid clichés and marketing fluff.'],
-    questions: ['Who is the audience and what action should they take?'],
-    formatHint: 'Use sections: Objective, Audience, Key Points, Style, Deliverable.',
-  },
-  {
-    domain: 'design',
-    keywords: ['design', 'ui', 'ux', 'figma', 'layout', 'mock'],
-    deliverableHint: 'Return UX goals, constraints, and acceptance for the design artifact.',
-    constraints: ['Call out platform/device targets and accessibility requirements.'],
-    questions: ['What screen sizes, brand tokens, and accessibility targets are required?'],
-    formatHint: 'Use sections: Objective, Users, Requirements, Deliverable, Checks.',
-  },
-  {
-    domain: 'research',
-    keywords: ['research', 'investigate', 'compare', 'analyze', 'analysis'],
-    deliverableHint: 'Return a plan for evidence gathering plus the synthesis format.',
-    constraints: ['Cite sources; distinguish facts vs assumptions.'],
-    questions: ['What time frame, regions, or datasets are in scope?'],
-    formatHint: 'Use sections: Objective, Scope, Evidence Plan, Deliverable, Checks.',
-  },
-  {
-    domain: 'data',
-    keywords: ['sql', 'query', 'data', 'dataset', 'csv', 'metrics', 'analytics'],
-    deliverableHint: 'Return the query/analysis task with schema assumptions and validation.',
-    constraints: ['Be explicit about schema, filters, and edge cases; prefer deterministic steps.'],
-    questions: ['Which tables/columns are available and how large is the dataset?'],
-    formatHint: 'Use sections: Objective, Inputs, Steps, Output, Validation.',
-  },
-  {
-    domain: 'vision',
-    keywords: ['photo', 'camera', 'image', 'vision', 'fridge', 'mobile', 'ios', 'android'],
-    deliverableHint: 'Return a concise product prompt covering capture → detect → suggest meals with privacy constraints.',
-    constraints: [
-      'Do not invent ingredients; base meal ideas only on detected items.',
-      'Include allergen/avoidance notes if the user provides them.',
-      'Prefer on-device processing unless server use is explicitly allowed.',
-    ],
-    questions: [
-      'Which meal types (breakfast/lunch/dinner) and dietary restrictions should be honored?',
-      'Is processing allowed server-side or must it stay on device?',
-    ],
-    formatHint: 'Use sections: Objective, Inputs (images), Flow, Deliverable, Checks.',
-    checks: [
-      'Photo captured, items detected, 3 meal ideas returned, no invented ingredients.',
-      'Each meal idea references detected items and notes allergens/avoidances.',
-    ],
-  },
-]
 
 function normalizeSeed(seed: string) {
   return seed.replace(/\s+/g, ' ').trim()
 }
 
-function stripHype(text: string) {
-  if (!text) return text
-  const hypeRegex = new RegExp(`\\b(${HYPE_WORDS.join('|')})\\b`, 'gi')
-  return text.replace(hypeRegex, '').replace(/[!]{2,}/g, '!').replace(/\s{2,}/g, ' ').trim()
-}
-
-function classifyTask(seed: string, keywords?: string): TaskProfile {
-  const haystack = `${seed} ${keywords ?? ''}`.toLowerCase()
-  const match = DOMAIN_RULES.find((rule) => rule.keywords.some((kw) => haystack.includes(kw)))
-
-  if (!match) {
-    return {
-      domain: 'general',
-      deliverableHint: 'Return a concise task prompt with constraints and acceptance checks.',
-      constraints: [],
-      formatHint: 'Use sections: Objective, Context, Deliverable, Constraints, Checks.',
-      questions: [],
-      checks: ['Output is concise, testable, and free of invented details.'],
-    }
-  }
-
-  return {
-    domain: match.domain,
-    deliverableHint: match.deliverableHint,
-    constraints: match.constraints ?? [],
-    formatHint: match.formatHint ?? 'Use sections: Objective, Context, Deliverable, Constraints, Checks.',
-    questions: match.questions ?? [],
-    checks: match.checks ?? ['Output is concise, testable, and free of invented details.'],
-  }
-}
-
-function buildStarter(objective: string) {
-  return `Objective: ${objective}`
-}
-
-function buildQuestions(
-  profile: TaskProfile,
-) {
-  return Array.from(new Set(profile.questions.filter(Boolean))).slice(0, 2)
-}
-
-function keywordCandidates(text: string) {
+function normalizeList(values?: string[]) {
   return Array.from(
-    new Set(
-      text
-        .toLowerCase()
-        .match(/[a-z][a-z0-9+#.-]{1,}/g)
-        ?.slice(0, 50) ?? [],
-    ),
+    new Set((values ?? []).map((value) => value.trim()).filter(Boolean)),
   )
 }
 
-function detectSkills(text: string) {
-  const matches = keywordCandidates(text)
-  const skills = new Set<string>()
-  matches.forEach((word) => {
-    const found = SKILL_MAP[word]
-    if (found) skills.add(found)
-  })
-  return Array.from(skills)
+function tokenSet(text: string) {
+  return new Set(
+    (text.toLowerCase().match(/[a-z][a-z0-9+#.-]*/g) ?? []).filter(Boolean),
+  )
 }
 
-async function generateMiddleWithTransformers(seed: string): Promise<string | null> {
-  // Avoid heavy downloads during tests or when explicitly disabled.
+function hasAny(tokens: Set<string>, values: string[]) {
+  return values.some((value) => tokens.has(value))
+}
+
+function stripHype(text: string) {
+  if (!text) return text
+  const hypeRegex = new RegExp(`\\b(${HYPE_WORDS.join('|')})\\b`, 'gi')
+  return text
+    .replace(hypeRegex, '')
+    .replace(/[!]{2,}/g, '!')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+}
+
+function cleanModelLine(text: string) {
+  return stripHype(
+    text
+      .replace(/^(mission|sentence|rewrite)\s*:\s*/i, '')
+      .replace(/^["'`]+/, '')
+      .replace(/["'`]+$/, '')
+      .replace(/\s+/g, ' ')
+      .trim(),
+  )
+}
+
+function classifyCodingTask(request: PromptRequest): TaskProfile {
+  const seed = normalizeSeed(request.seed)
+  const haystack = [
+    seed,
+    ...(request.keywords ?? []),
+    request.codebaseContext ?? '',
+    ...(request.constraints ?? []),
+    ...(request.verification ?? []),
+    ...(request.nonGoals ?? []),
+  ]
+    .join(' ')
+    .toLowerCase()
+  const tokens = tokenSet(haystack)
+  const greenfieldIntent =
+    request.buildMode === 'app' ||
+    /\b(build|create|plan|scaffold|start|launch|ship)\b[\w\s-]{0,40}\b(app|mvp|prototype|starter|project|tool|site)\b/.test(
+      haystack,
+    )
+
+  if (
+    request.buildMode === 'bug' ||
+    hasAny(tokens, ['bug', 'fix', 'broken', 'crash', 'failure', 'regression', 'issue'])
+  ) {
+    return ARCHETYPE_PROFILES.bugfix
+  }
+
+  if (
+    hasAny(tokens, [
+      'refactor',
+      'cleanup',
+      'rename',
+      'restructure',
+      'simplify',
+      'debt',
+      'modernize',
+      'extract',
+      'consolidate',
+    ])
+  ) {
+    return ARCHETYPE_PROFILES.refactor
+  }
+
+  if (
+    hasAny(tokens, [
+      'api',
+      'endpoint',
+      'oauth',
+      'auth',
+      'webhook',
+      'integration',
+      'deploy',
+      'vercel',
+      'ci',
+      'infra',
+      'migration',
+      'database',
+      'schema',
+      'stripe',
+      'supabase',
+      'worker',
+      'queue',
+      'serverless',
+    ])
+  ) {
+    return ARCHETYPE_PROFILES.integration
+  }
+
+  if (
+    greenfieldIntent ||
+    hasAny(tokens, [
+      'mvp',
+      'prototype',
+      'starter',
+      'greenfield',
+      'scaffold',
+      'launch',
+      'ship',
+      'planner',
+    ])
+  ) {
+    return ARCHETYPE_PROFILES.greenfield
+  }
+
+  return ARCHETYPE_PROFILES.feature
+}
+
+function buildMissingContext(
+  request: PromptRequest,
+  profile: TaskProfile,
+  keywords: string[],
+  verification: string[],
+  nonGoals: string[],
+) {
+  const items: string[] = []
+
+  if (!keywords.length) {
+    items.push('Framework, stack, tools, or file paths that should guide the repo exploration.')
+  }
+
+  if (!request.codebaseContext?.trim()) {
+    items.push('Relevant repository areas, entry points, or existing examples to inspect first.')
+  }
+
+  if (!verification.length) {
+    items.push('Concrete verification commands, done criteria, or manual checks.')
+  }
+
+  if (!nonGoals.length) {
+    items.push('Explicit non-goals or boundaries that should stay out of scope.')
+  }
+
+  for (const item of profile.missingContext) {
+    if (!items.includes(item)) items.push(item)
+  }
+
+  return items.slice(0, 4)
+}
+
+function buildAssumptions(
+  request: PromptRequest,
+  keywords: string[],
+  constraints: string[],
+  verification: string[],
+  nonGoals: string[],
+) {
+  const assumptions: string[] = []
+
+  if (!keywords.length) {
+    assumptions.push(
+      'No stack or file hints were provided, so the downstream agent should detect the framework and relevant entry points from the repo.',
+    )
+  }
+
+  if (!request.codebaseContext?.trim()) {
+    assumptions.push(
+      'No repository context was provided, so the downstream agent should locate the most relevant subsystem and follow existing conventions there.',
+    )
+  }
+
+  if (!constraints.length) {
+    assumptions.push(
+      'No extra constraints were provided, so the downstream agent should prefer the smallest convention-preserving solution.',
+    )
+  }
+
+  if (!verification.length) {
+    assumptions.push(
+      'No verification commands were supplied, so the downstream agent should infer the project-standard tests, linting, build, and manual checks.',
+    )
+  }
+
+  if (!nonGoals.length) {
+    assumptions.push(
+      'No non-goals were listed, so unrelated refactors and extra features should be treated as out of scope.',
+    )
+  }
+
+  if (
+    request.buildApproach === 'multi-phase' &&
+    normalizeList(request.milestones).length === 0
+  ) {
+    assumptions.push(
+      'No explicit milestones were provided, so the downstream agent should derive sensible phases from repo boundaries and risk.',
+    )
+  }
+
+  return assumptions.slice(0, 5)
+}
+
+async function polishMissionLine(
+  request: PromptRequest,
+  archetype: TaskArchetype,
+  draft: string,
+) {
   if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') {
-    return null
+    return draft
   }
-  if (import.meta.env.SSR) return null
-  // @ts-expect-error vite env guard
-  if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_DISABLE_TRANSFORMERS === 'true') {
-    return null
-  }
-  // Only run on the client; server/SSR should fall back.
-  if (typeof window === 'undefined') return null
+
+  // @ts-expect-error vite env is injected in browser/Vite contexts only
+  const viteEnv = typeof import.meta !== 'undefined' ? import.meta.env : undefined
+  if (viteEnv?.SSR) return draft
+  if (typeof window === 'undefined') return draft
+
   try {
-    const { generateClientText } = await import('./clientModel')
-    const prompt = `You rewrite rough ideas into crisp task prompts. Keep it short, structured, and hype-free.\nFormat strictly:\nObjective: <one sentence>\nKey Points: - <3 bullets max>\nDeliverable: <one sentence>\nIdea: "${seed}"\nRewrite:`
+    const { generateClientTextWithTimeout } = await import('./clientModel')
+    const prompt = [
+      'Rewrite the following software-task mission for a coding agent.',
+      'Requirements:',
+      '- Return one sentence only.',
+      '- Keep it agent-neutral.',
+      '- Keep the wording plan-first.',
+      '- No markdown, no quotes, no bullet points.',
+      '- No hype, no filler, no new features.',
+      `Task type: ${archetype}`,
+      `Original user idea: ${request.seed}`,
+      `Draft: ${draft}`,
+      'Sentence:',
+    ].join('\n')
 
-    const text = await generateClientText(prompt, {
-      max_new_tokens: 120,
-      temperature: 0.35,
-      top_p: 0.85,
-      top_k: 50,
-      repetition_penalty: 1.08,
-    })
-    const cleaned = text.split('Rewrite:').pop()?.trim() ?? text.trim()
-    return cleaned.length > 0 ? cleaned : null
-  } catch (err) {
-    console.warn('Transformers generation failed, falling back.', err)
-    return null
+    const raw = await generateClientTextWithTimeout(
+      prompt,
+      {
+        max_new_tokens: 48,
+        temperature: 0.2,
+        top_p: 0.85,
+        top_k: 40,
+        repetition_penalty: 1.08,
+      },
+      6000,
+    )
+    const candidate = cleanModelLine(raw.split('Sentence:').pop() ?? raw)
+
+    if (
+      candidate.length < 20 ||
+      candidate.length > 220 ||
+      /<(?:mission|sentence|rewrite)>/i.test(candidate)
+    ) {
+      return draft
+    }
+
+    return candidate
+  } catch {
+    return draft
   }
 }
 
-function fallbackMiddle(seed: string, profile: TaskProfile) {
-  return `Objective: ${seed}\nDeliverable: ${profile.deliverableHint}`
-}
-
-function stripLabel(text: string) {
-  // Remove leading labels like "Objective:", "Deliverable:", etc.
-  return text.replace(/^(objective|deliverable|output|goal|aim)\s*:\s*/i, '')
-}
-
-function cleanSegment(text: string) {
-  const noLabel = stripLabel(text)
-  return stripHype(noLabel.replace(/^[^A-Za-z0-9]+/, '').trim())
-}
-
-function ensureMeaningful(text: string, fallback: string) {
-  const cleaned = text.trim()
-  if (cleaned.length < 8) return fallback
-  if (/(sentence|rewrite|placeholder|<|>)/i.test(cleaned)) return fallback
-  return cleaned
-}
-
-function extractStructuredRewrite(raw: string | null, seed: string, profile: TaskProfile) {
-  if (!raw) {
-    return fallbackMiddle(seed, profile)
-  }
-
-  const lines = raw.split(/\n+/).map((l) => l.trim()).filter(Boolean)
-  const objectiveLine = lines.find((l) => l.toLowerCase().startsWith('objective'))
-  const deliverableLine = lines.find((l) => l.toLowerCase().startsWith('deliverable'))
-  const keyPoints = lines.filter((l) => l.toLowerCase().startsWith('-'))
-
-  const objectiveCandidate = cleanSegment(objectiveLine ?? lines[0] ?? seed)
-  const deliverableCandidate = cleanSegment(deliverableLine ?? profile.deliverableHint)
-
-  const objective = ensureMeaningful(objectiveCandidate, seed)
-  const deliverable = ensureMeaningful(deliverableCandidate, profile.deliverableHint)
-  const merged = [objective, ...(keyPoints.length ? keyPoints : []), deliverable]
-  return merged.join('\n')
+function formatListBlock(title: string, items: string[]) {
+  return [title, ...items.map((item) => `- ${item}`), '']
 }
 
 export async function composePrompt(request: PromptRequest): Promise<PromptSections> {
-  const seed = normalizeSeed(request.seed || 'a small feature')
-  const keywordText = normalizeSeed((request.keywords ?? []).join(' '))
-  const profile = classifyTask(seed, keywordText)
+  const seed = normalizeSeed(request.seed || 'the requested coding task')
+  const keywords = normalizeList(request.keywords)
+  const constraints = normalizeList(request.constraints)
+  const verification = normalizeList(request.verification)
+  const milestones = normalizeList(request.milestones)
+  const nonGoals = normalizeList(request.nonGoals)
+  const profile = classifyCodingTask({ ...request, seed, keywords })
 
-  const middleRaw = await generateMiddleWithTransformers(seed)
-  const middle = extractStructuredRewrite(middleRaw, seed, profile)
-  const objectiveLine = cleanSegment(middle.split('\n')[0] ?? seed)
-  const starter = buildStarter(objectiveLine)
+  const missingContext = buildMissingContext(
+    request,
+    profile,
+    keywords,
+    verification,
+    nonGoals,
+  )
+  const assumptions = buildAssumptions(
+    request,
+    keywords,
+    constraints,
+    verification,
+    nonGoals,
+  )
+  const skills = findSkillsFromText(
+    [seed, request.codebaseContext ?? '', ...keywords, ...constraints, ...verification].join(' '),
+  )
 
-  const questions = buildQuestions(profile)
-  const skills = detectSkills(`${seed} ${keywordText} ${middle}`)
+  const missionDraft = profile.missionTemplate(seed)
+  const mission = await polishMissionLine(request, profile.archetype, missionDraft)
 
-  const constraints = Array.from(new Set([...BASE_CONSTRAINTS, ...profile.constraints]))
-  const checks = Array.from(new Set(profile.checks.length ? profile.checks : ['Output is concise, testable, and free of invented details.']))
+  const contextItems = [`User request: ${seed}`]
 
-  const blocks = [
-    'Objective:',
-    objectiveLine,
-    '',
-    'Context & Inputs:',
-    `- User idea: ${seed}`,
+  if (keywords.length > 0) {
+    contextItems.push(`Stack / tools / files: ${keywords.join(', ')}`)
+  } else {
+    contextItems.push('Stack / tools / files: infer from the repository during exploration.')
+  }
+
+  if (request.codebaseContext?.trim()) {
+    contextItems.push(`Repository context: ${stripHype(request.codebaseContext.trim())}`)
+  } else {
+    contextItems.push('Repository context: not provided; locate the relevant area in the repo first.')
+  }
+
+  if (request.buildApproach === 'multi-phase') {
+    contextItems.push(
+      `Delivery shape: phased plan with ${request.phaseCount ?? 3} phases${milestones.length ? ` and checkpoints: ${milestones.join(', ')}` : ''}.`,
+    )
+  } else {
+    contextItems.push('Delivery shape: one planning pass before any code changes.')
+  }
+
+  if (constraints.length > 0) {
+    contextItems.push(`Constraints: ${constraints.join('; ')}`)
+  }
+
+  if (nonGoals.length > 0) {
+    contextItems.push(`Non-goals: ${nonGoals.join('; ')}`)
+  }
+
+  const workingRules = Array.from(
+    new Set([
+      ...BASE_WORKING_RULES,
+      ...profile.workingRules,
+      'Keep the response concise, repo-grounded, and implementation-ready.',
+    ]),
+  )
+
+  const expectedOutput = Array.from(
+    new Set([
+      ...BASE_EXPECTED_OUTPUT,
+      ...profile.expectedOutput,
+      request.buildApproach === 'multi-phase'
+        ? `Phase the plan into ${request.phaseCount ?? 3} implementation phases.`
+        : 'Return a single coherent plan rather than multiple competing options.',
+      'Do not start implementation until the plan is approved.',
+    ]),
+  )
+
+  const verificationItems = Array.from(
+    new Set([
+      ...BASE_VERIFICATION,
+      ...profile.verification,
+      verification.length > 0
+        ? `Include these user-specified checks when relevant: ${verification.join('; ')}`
+        : 'Infer the project-standard tests, linting, build, and manual checks if commands are not supplied.',
+    ]),
+  )
+
+  const suggestedPatterns = Array.from(
+    new Set([
+      ...BASE_SKILL_PATTERNS,
+      ...skills.map((skill) => `${skill.skill}: ${skill.reason}`),
+    ]),
+  )
+
+  const promptBlocks = [
+    ...formatListBlock('Mission', [mission]),
+    ...formatListBlock('Context you should use', contextItems),
+    ...formatListBlock('Working rules', workingRules),
+    ...formatListBlock('Expected output', expectedOutput),
+    ...formatListBlock('Verification', verificationItems),
+    ...formatListBlock('Suggested skills/patterns', suggestedPatterns),
   ]
 
-  if ((request.keywords ?? []).length > 0) {
-    blocks.push(`- Keywords: ${stripHype(keywordText)}`)
-  }
-
-  blocks.push('', 'Deliverable:', `- ${profile.deliverableHint}`)
-
-  blocks.push('', 'Constraints:', ...constraints.map((c) => `- ${c}`))
-
-  if (request.buildMode === 'change') {
-    blocks.push('- Keep regression risk minimal and note rollback criteria.')
-  } else if (request.buildMode === 'bug') {
-    blocks.push('- Include repro steps, expected vs actual, and guard tests.')
-  }
-
-  blocks.push('', 'Format:', `- ${profile.formatHint}`)
-
-  blocks.push('', 'Quality Bar:', ...QUALITY_BAR.map((c) => `- ${c}`))
-
-  blocks.push('', 'Checks:', ...checks.map((c) => `- ${c}`))
-
-  if (questions.length > 0) {
-    blocks.push('', 'Blocking Questions (only if critical info is missing):', ...questions.map((q, i) => `${i + 1}. ${q}`))
-  }
-
-  if (skills.length > 0) {
-    blocks.push('', 'Skills to install/use:', ...skills.map((s) => `- ${s}`))
-  }
+  const copyPrompt = promptBlocks.join('\n').trim()
 
   return {
-    starter,
-    middle,
-    questions,
+    archetype: profile.archetype,
+    copyPrompt,
+    fullPrompt: copyPrompt,
+    missingContext,
+    assumptions,
     skills,
-    grillMe: '',
-    fullPrompt: blocks.join('\n'),
   }
 }
