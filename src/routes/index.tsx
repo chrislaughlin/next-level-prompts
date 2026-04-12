@@ -42,6 +42,7 @@ import {
 } from '../lib/wizardState'
 import type { BuildApproach, WizardState } from '../lib/wizardState'
 import type { SkillMatch } from '../services/skills'
+import { generatePromptWithSkillsServer } from '../server/openrouter'
 
 type ClientModelModule = {
   getLastBackend: () => 'openrouter' | null
@@ -185,7 +186,10 @@ function loadState(): WizardState {
 function saveState(state: WizardState) {
   if (typeof window === 'undefined') return
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(getPersistedWizardState(state)))
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(getPersistedWizardState(state)),
+    )
   } catch {
     /* ignore */
   }
@@ -265,83 +269,90 @@ function App() {
     return wizard.seed.trim().length > 3
   }, [activeStep, wizard.seed])
 
-  const runCompose = useCallback(
-    async (state: WizardState) => {
-      if (!state.seed.trim()) return
-      setLoading(true)
-      setIsStreaming(true)
-      setError(null)
-      try {
-        const result = await composePrompt({
+  const runCompose = useCallback(async (state: WizardState) => {
+    if (!state.seed.trim()) return
+    setLoading(true)
+    setIsStreaming(true)
+    setError(null)
+    try {
+      const refined = await generatePromptWithSkillsServer({
+        data: {
           seed: state.seed,
           keywords: state.keywords,
           buildMode: state.buildMode,
           buildApproach: state.buildApproach,
-          phaseCount: state.buildApproach === 'multi-phase' ? state.phaseCount : undefined,
-          milestones: state.buildApproach === 'multi-phase' ? state.milestones : undefined,
+          phaseCount:
+            state.buildApproach === 'multi-phase'
+              ? state.phaseCount
+              : undefined,
+          milestones:
+            state.buildApproach === 'multi-phase'
+              ? state.milestones
+              : undefined,
           codebaseContext: state.codebaseContext,
           constraints: state.constraints,
           verification: state.verification,
           nonGoals: state.nonGoals,
-          multiPhasePreference: 'ask',
-        })
-        try {
-          const { generatePromptWithSkillsServer } = await import('../server/openrouter')
-          const refined = await generatePromptWithSkillsServer({
-            data: {
-              seed: state.seed,
-              keywords: state.keywords,
-              buildMode: state.buildMode,
-              buildApproach: state.buildApproach,
-              phaseCount: state.buildApproach === 'multi-phase' ? state.phaseCount : undefined,
-              milestones: state.buildApproach === 'multi-phase' ? state.milestones : undefined,
-              codebaseContext: state.codebaseContext,
-              constraints: state.constraints,
-              verification: state.verification,
-              nonGoals: state.nonGoals,
-            },
-          })
+        },
+      })
 
-          if (refined?.prompt?.trim()) {
-            const mergedSkills: SkillMatch[] = Array.from(
-              new Map(
-                [...result.skills, ...(refined.skillNames ?? []).map((skill) => ({
-                  skill,
-                  reason: 'Matched from skills API using extracted keywords',
-                }))]
-                  .filter((skill) => skill.skill.trim())
-                  .map((skill) => [skill.skill, skill]),
-              ).values(),
-            )
-
-            result.copyPrompt = refined.prompt
-            result.fullPrompt = refined.prompt
-            result.skills = mergedSkills
-          }
-        } catch {
-          // fall back to deterministic local prompt engine output
-        }
-        setPreview(result)
-        setSkillBadges(result.skills)
-        setToast({
-          open: true,
-          message: 'Kickoff prompt ready',
-          severity: 'success',
-        })
-      } catch (err: any) {
-        setError(err?.message ?? 'Failed to generate prompt')
-        setToast({
-          open: true,
-          message: err?.message ?? 'Prompt generation failed',
-          severity: 'error',
-        })
-      } finally {
-        setLoading(false)
-        setIsStreaming(false)
+      if (!refined?.prompt?.trim()) {
+        throw new Error('Prompt generation service returned an empty prompt.')
       }
-    },
-    [],
-  )
+
+      const result = await composePrompt({
+        seed: state.seed,
+        keywords: state.keywords,
+        buildMode: state.buildMode,
+        buildApproach: state.buildApproach,
+        phaseCount:
+          state.buildApproach === 'multi-phase' ? state.phaseCount : undefined,
+        milestones:
+          state.buildApproach === 'multi-phase' ? state.milestones : undefined,
+        codebaseContext: state.codebaseContext,
+        constraints: state.constraints,
+        verification: state.verification,
+        nonGoals: state.nonGoals,
+        multiPhasePreference: 'ask',
+      })
+
+      const mergedSkills: SkillMatch[] = Array.from(
+        new Map(
+          [
+            ...result.skills,
+            ...(refined.skillNames ?? []).map((skill) => ({
+              skill,
+              reason: 'Matched from skills API using extracted keywords',
+            })),
+          ]
+            .filter((skill) => skill.skill.trim())
+            .map((skill) => [skill.skill, skill]),
+        ).values(),
+      )
+
+      result.copyPrompt = refined.prompt
+      result.fullPrompt = refined.prompt
+      result.skills = mergedSkills
+
+      setPreview(result)
+      setSkillBadges(result.skills)
+      setToast({
+        open: true,
+        message: 'Kickoff prompt ready',
+        severity: 'success',
+      })
+    } catch (err: any) {
+      setError(err?.message ?? 'Failed to generate prompt')
+      setToast({
+        open: true,
+        message: err?.message ?? 'Prompt generation failed',
+        severity: 'error',
+      })
+    } finally {
+      setLoading(false)
+      setIsStreaming(false)
+    }
+  }, [])
 
   const regenerate = useCallback(() => {
     scrollToPreview()
@@ -380,7 +391,9 @@ function App() {
   )
 
   const promptText = useMemo(
-    () => preview?.copyPrompt ?? 'Your coding-agent kickoff prompt will appear here.',
+    () =>
+      preview?.copyPrompt ??
+      'Your coding-agent kickoff prompt will appear here.',
     [preview],
   )
 
@@ -546,14 +559,21 @@ function App() {
           boxShadow: 'inset 0 0 0 1px rgba(255,243,107,0.15)',
         }}
       >
-        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={markdownComponents}
+        >
           {'```\n' + promptText + '\n```'}
         </ReactMarkdown>
       </Box>
       <Divider sx={{ my: 2, borderColor: 'rgba(255,57,212,0.32)' }} />
       <Stack spacing={2} mb={2}>
         <Box>
-          <Typography variant="subtitle2" gutterBottom sx={{ color: '#16f2ff' }}>
+          <Typography
+            variant="subtitle2"
+            gutterBottom
+            sx={{ color: '#16f2ff' }}
+          >
             Missing context
           </Typography>
           {preview?.missingContext?.length ? (
@@ -572,7 +592,11 @@ function App() {
         </Box>
 
         <Box>
-          <Typography variant="subtitle2" gutterBottom sx={{ color: '#fff36b' }}>
+          <Typography
+            variant="subtitle2"
+            gutterBottom
+            sx={{ color: '#fff36b' }}
+          >
             Assumptions baked in
           </Typography>
           {preview?.assumptions?.length ? (
@@ -622,7 +646,9 @@ function App() {
       case 0:
         return (
           <Stack spacing={2}>
-            <Typography variant="subtitle1">Choose the coding task shape</Typography>
+            <Typography variant="subtitle1">
+              Choose the coding task shape
+            </Typography>
             <BuildModeSelector
               value={wizard.buildMode}
               onChange={handleBuildModeChange}
@@ -633,7 +659,9 @@ function App() {
       case 1:
         return (
           <Stack spacing={2}>
-            <Typography variant="subtitle1">Select the planning depth</Typography>
+            <Typography variant="subtitle1">
+              Select the planning depth
+            </Typography>
             <ToggleButtonGroup
               exclusive
               value={wizard.buildApproach}
@@ -652,7 +680,8 @@ function App() {
                 selected={wizard.buildApproach === 'one-shot'}
                 sx={buildToggleButtonSx(wizard.buildApproach === 'one-shot')}
               >
-                <RefreshIcon fontSize="small" />&nbsp;One shot
+                <RefreshIcon fontSize="small" />
+                &nbsp;One shot
               </ToggleButton>
               <ToggleButton
                 value="multi-phase"
@@ -660,7 +689,8 @@ function App() {
                 selected={wizard.buildApproach === 'multi-phase'}
                 sx={buildToggleButtonSx(wizard.buildApproach === 'multi-phase')}
               >
-                <TimelineIcon fontSize="small" />&nbsp;Multi-phase
+                <TimelineIcon fontSize="small" />
+                &nbsp;Multi-phase
               </ToggleButton>
             </ToggleButtonGroup>
             {wizard.buildApproach === 'multi-phase' && (
@@ -682,7 +712,9 @@ function App() {
                 />
                 <ChipInput
                   values={wizard.milestones}
-                  onChange={(next) => setWizard((w) => ({ ...w, milestones: next }))}
+                  onChange={(next) =>
+                    setWizard((w) => ({ ...w, milestones: next }))
+                  }
                   label="Add phase checkpoint"
                 />
               </Stack>
@@ -692,7 +724,9 @@ function App() {
       case 2:
         return (
           <Stack spacing={2}>
-            <Typography variant="subtitle1">Load stack, tools, and file hints</Typography>
+            <Typography variant="subtitle1">
+              Load stack, tools, and file hints
+            </Typography>
             <ChipInput
               values={wizard.keywords}
               onChange={(next) => setWizard((w) => ({ ...w, keywords: next }))}
@@ -704,7 +738,9 @@ function App() {
       default:
         return (
           <Stack spacing={2}>
-            <Typography variant="subtitle1">Write the task brief and repo context</Typography>
+            <Typography variant="subtitle1">
+              Write the task brief and repo context
+            </Typography>
             <TextField
               label="Task brief"
               multiline
@@ -742,12 +778,16 @@ function App() {
             />
             <ChipInput
               values={wizard.constraints}
-              onChange={(next) => setWizard((w) => ({ ...w, constraints: next }))}
+              onChange={(next) =>
+                setWizard((w) => ({ ...w, constraints: next }))
+              }
               label="Constraints"
             />
             <ChipInput
               values={wizard.verification}
-              onChange={(next) => setWizard((w) => ({ ...w, verification: next }))}
+              onChange={(next) =>
+                setWizard((w) => ({ ...w, verification: next }))
+              }
               label="Verification commands / done criteria"
             />
             <ChipInput
@@ -821,18 +861,33 @@ function App() {
               px: { xs: 2.5, md: 4 },
             }}
           >
-            <Stack spacing={3} pt={{ xs: 4, md: 6 }} pb={3} width="min(1080px, 100%)">
+            <Stack
+              spacing={3}
+              pt={{ xs: 4, md: 6 }}
+              pb={3}
+              width="min(1080px, 100%)"
+            >
               <Box
                 sx={{
                   border: '2px solid #fff36b',
-                  boxShadow: '0 0 0 2px rgba(22,242,255,0.45), 0 0 22px rgba(255,57,212,0.32)',
+                  boxShadow:
+                    '0 0 0 2px rgba(22,242,255,0.45), 0 0 22px rgba(255,57,212,0.32)',
                   background: 'rgba(6,3,18,0.88)',
                   overflow: 'hidden',
                   px: 2,
                   py: 1.5,
                 }}
               >
-                <Box className="marquee-text" sx={{ display: 'inline-flex', gap: 6, pr: 6, color: '#fff36b', fontSize: { xs: '0.62rem', sm: '0.72rem' } }}>
+                <Box
+                  className="marquee-text"
+                  sx={{
+                    display: 'inline-flex',
+                    gap: 6,
+                    pr: 6,
+                    color: '#fff36b',
+                    fontSize: { xs: '0.62rem', sm: '0.72rem' },
+                  }}
+                >
                   <span>Welcome to the neon prompt arcade</span>
                   <span>Welcome to the neon prompt arcade</span>
                   <span>Welcome to the neon prompt arcade</span>
@@ -840,7 +895,10 @@ function App() {
               </Box>
 
               <Stack spacing={2} alignItems="flex-start">
-                <Typography variant="overline" sx={{ color: '#16f2ff', letterSpacing: '0.22em' }}>
+                <Typography
+                  variant="overline"
+                  sx={{ color: '#16f2ff', letterSpacing: '0.22em' }}
+                >
                   Coding-Agent Prompt Builder
                 </Typography>
                 <Typography
@@ -865,8 +923,8 @@ function App() {
                 >
                   Feed in a rough software task, add a little repo context, and
                   leave with a copy-ready kickoff prompt for a coding agent. The
-                  output is plan-first, verification-aware, and tuned to push the
-                  agent toward repo exploration before any code changes.
+                  output is plan-first, verification-aware, and tuned to push
+                  the agent toward repo exploration before any code changes.
                 </Typography>
               </Stack>
 
@@ -907,12 +965,7 @@ function App() {
               </Stack>
             </Stack>
 
-            <Stack
-              spacing={3}
-              pb={6}
-              alignItems="center"
-              width="100%"
-            >
+            <Stack spacing={3} pb={6} alignItems="center" width="100%">
               <Paper
                 sx={{
                   p: { xs: 2.25, sm: 3 },
@@ -921,7 +974,10 @@ function App() {
                 }}
               >
                 <Stack spacing={2}>
-                  <WizardStepIndicator activeStep={activeStep} isMobile={isMobile} />
+                  <WizardStepIndicator
+                    activeStep={activeStep}
+                    isMobile={isMobile}
+                  />
                   {renderStepContent()}
                   {error ? (
                     <Typography color="error" variant="body2">
@@ -934,7 +990,11 @@ function App() {
                     justifyContent="space-between"
                     spacing={1.25}
                   >
-                    <Button variant="text" onClick={handleReset} color="secondary">
+                    <Button
+                      variant="text"
+                      onClick={handleReset}
+                      color="secondary"
+                    >
                       Reset
                     </Button>
                     <Stack
@@ -974,9 +1034,7 @@ function App() {
                 </Stack>
               </Paper>
 
-              <Box width="min(960px, 100%)">
-                {stickyPreview}
-              </Box>
+              <Box width="min(960px, 100%)">{stickyPreview}</Box>
             </Stack>
           </Box>
         </Box>
