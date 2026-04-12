@@ -210,17 +210,6 @@ function stripHype(text: string) {
     .trim()
 }
 
-function cleanModelLine(text: string) {
-  return stripHype(
-    text
-      .replace(/^(mission|sentence|rewrite)\s*:\s*/i, '')
-      .replace(/^["'`]+/, '')
-      .replace(/["'`]+$/, '')
-      .replace(/\s+/g, ' ')
-      .trim(),
-  )
-}
-
 function classifyCodingTask(request: PromptRequest): TaskProfile {
   const seed = normalizeSeed(request.seed)
   const haystack = [
@@ -242,7 +231,15 @@ function classifyCodingTask(request: PromptRequest): TaskProfile {
 
   if (
     request.buildMode === 'bug' ||
-    hasAny(tokens, ['bug', 'fix', 'broken', 'crash', 'failure', 'regression', 'issue'])
+    hasAny(tokens, [
+      'bug',
+      'fix',
+      'broken',
+      'crash',
+      'failure',
+      'regression',
+      'issue',
+    ])
   ) {
     return ARCHETYPE_PROFILES.bugfix
   }
@@ -317,19 +314,27 @@ function buildMissingContext(
   const items: string[] = []
 
   if (!keywords.length) {
-    items.push('Framework, stack, tools, or file paths that should guide the repo exploration.')
+    items.push(
+      'Framework, stack, tools, or file paths that should guide the repo exploration.',
+    )
   }
 
   if (!request.codebaseContext?.trim()) {
-    items.push('Relevant repository areas, entry points, or existing examples to inspect first.')
+    items.push(
+      'Relevant repository areas, entry points, or existing examples to inspect first.',
+    )
   }
 
   if (!verification.length) {
-    items.push('Concrete verification commands, done criteria, or manual checks.')
+    items.push(
+      'Concrete verification commands, done criteria, or manual checks.',
+    )
   }
 
   if (!nonGoals.length) {
-    items.push('Explicit non-goals or boundaries that should stay out of scope.')
+    items.push(
+      'Explicit non-goals or boundaries that should stay out of scope.',
+    )
   }
 
   for (const item of profile.missingContext) {
@@ -390,68 +395,13 @@ function buildAssumptions(
   return assumptions.slice(0, 5)
 }
 
-async function polishMissionLine(
-  request: PromptRequest,
-  archetype: TaskArchetype,
-  draft: string,
-) {
-  if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'test') {
-    return draft
-  }
-
-  // @ts-expect-error vite env is injected in browser/Vite contexts only
-  const viteEnv = typeof import.meta !== 'undefined' ? import.meta.env : undefined
-  if (viteEnv?.SSR) return draft
-  if (typeof window === 'undefined') return draft
-
-  try {
-    const { generateClientTextWithTimeout } = await import('./clientModel')
-    const prompt = [
-      'Rewrite the following software-task mission for a coding agent.',
-      'Requirements:',
-      '- Return one sentence only.',
-      '- Keep it agent-neutral.',
-      '- Keep the wording plan-first.',
-      '- No markdown, no quotes, no bullet points.',
-      '- No hype, no filler, no new features.',
-      `Task type: ${archetype}`,
-      `Original user idea: ${request.seed}`,
-      `Draft: ${draft}`,
-      'Sentence:',
-    ].join('\n')
-
-    const raw = await generateClientTextWithTimeout(
-      prompt,
-      {
-        max_new_tokens: 48,
-        temperature: 0.2,
-        top_p: 0.85,
-        top_k: 40,
-        repetition_penalty: 1.08,
-      },
-      6000,
-    )
-    const candidate = cleanModelLine(raw.split('Sentence:').pop() ?? raw)
-
-    if (
-      candidate.length < 20 ||
-      candidate.length > 220 ||
-      /<(?:mission|sentence|rewrite)>/i.test(candidate)
-    ) {
-      return draft
-    }
-
-    return candidate
-  } catch {
-    return draft
-  }
-}
-
 function formatListBlock(title: string, items: string[]) {
   return [title, ...items.map((item) => `- ${item}`), '']
 }
 
-export async function composePrompt(request: PromptRequest): Promise<PromptSections> {
+export async function composePrompt(
+  request: PromptRequest,
+): Promise<PromptSections> {
   const seed = normalizeSeed(request.seed || 'the requested coding task')
   const keywords = normalizeList(request.keywords)
   const constraints = normalizeList(request.constraints)
@@ -475,24 +425,35 @@ export async function composePrompt(request: PromptRequest): Promise<PromptSecti
     nonGoals,
   )
   const skills = findSkillsFromText(
-    [seed, request.codebaseContext ?? '', ...keywords, ...constraints, ...verification].join(' '),
+    [
+      seed,
+      request.codebaseContext ?? '',
+      ...keywords,
+      ...constraints,
+      ...verification,
+    ].join(' '),
   )
 
-  const missionDraft = profile.missionTemplate(seed)
-  const mission = await polishMissionLine(request, profile.archetype, missionDraft)
+  const mission = profile.missionTemplate(seed)
 
   const contextItems = [`User request: ${seed}`]
 
   if (keywords.length > 0) {
     contextItems.push(`Stack / tools / files: ${keywords.join(', ')}`)
   } else {
-    contextItems.push('Stack / tools / files: infer from the repository during exploration.')
+    contextItems.push(
+      'Stack / tools / files: infer from the repository during exploration.',
+    )
   }
 
   if (request.codebaseContext?.trim()) {
-    contextItems.push(`Repository context: ${stripHype(request.codebaseContext.trim())}`)
+    contextItems.push(
+      `Repository context: ${stripHype(request.codebaseContext.trim())}`,
+    )
   } else {
-    contextItems.push('Repository context: not provided; locate the relevant area in the repo first.')
+    contextItems.push(
+      'Repository context: not provided; locate the relevant area in the repo first.',
+    )
   }
 
   if (request.buildApproach === 'multi-phase') {
@@ -500,7 +461,9 @@ export async function composePrompt(request: PromptRequest): Promise<PromptSecti
       `Delivery shape: phased plan with ${request.phaseCount ?? 3} phases${milestones.length ? ` and checkpoints: ${milestones.join(', ')}` : ''}.`,
     )
   } else {
-    contextItems.push('Delivery shape: one planning pass before any code changes.')
+    contextItems.push(
+      'Delivery shape: one planning pass before any code changes.',
+    )
   }
 
   if (constraints.length > 0) {
