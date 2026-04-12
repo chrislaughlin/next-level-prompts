@@ -44,10 +44,10 @@ import type { BuildApproach, WizardState } from '../lib/wizardState'
 import type { SkillMatch } from '../services/skills'
 
 type ClientModelModule = {
-  getLastBackend: () => 'webgpu' | 'wasm' | null
+  getLastBackend: () => 'openrouter' | null
   isModelCached: () => Promise<boolean>
   isWebGPUPreferred: () => boolean
-  prefetchModel: () => Promise<void>
+  prefetchModel: () => Promise<void | null>
 }
 
 let clientModelLoader: Promise<ClientModelModule> | null = null
@@ -211,7 +211,7 @@ function App() {
   const [modelStatus, setModelStatus] = useState<
     'idle' | 'warming' | 'warming-cached' | 'ready' | 'error'
   >('idle')
-  const [backend, setBackend] = useState<'webgpu' | 'wasm' | null>(null)
+  const [backend, setBackend] = useState<'openrouter' | null>(null)
   const [webGpuPreferred, setWebGpuPreferred] = useState<boolean | null>(null)
   const [placeholderIndex, setPlaceholderIndex] = useState(() =>
     Math.floor(Math.random() * PLACEHOLDER_IDEAS.length),
@@ -856,10 +856,10 @@ function App() {
                 <Chip
                   label={
                     webGpuPreferred == null
-                      ? 'GPU preference scanning'
+                      ? 'Provider readiness unknown'
                       : webGpuPreferred
-                        ? 'WebGPU preferred'
-                        : 'WASM fallback ready'
+                        ? 'GPU acceleration enabled'
+                        : 'Cloud model route active'
                   }
                   sx={{
                     color: '#ffb5ef',
