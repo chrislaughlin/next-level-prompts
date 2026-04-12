@@ -285,6 +285,42 @@ function App() {
           nonGoals: state.nonGoals,
           multiPhasePreference: 'ask',
         })
+        try {
+          const { generatePromptWithSkillsServer } = await import('../server/openrouter')
+          const refined = await generatePromptWithSkillsServer({
+            data: {
+              seed: state.seed,
+              keywords: state.keywords,
+              buildMode: state.buildMode,
+              buildApproach: state.buildApproach,
+              phaseCount: state.buildApproach === 'multi-phase' ? state.phaseCount : undefined,
+              milestones: state.buildApproach === 'multi-phase' ? state.milestones : undefined,
+              codebaseContext: state.codebaseContext,
+              constraints: state.constraints,
+              verification: state.verification,
+              nonGoals: state.nonGoals,
+            },
+          })
+
+          if (refined?.prompt?.trim()) {
+            const mergedSkills: SkillMatch[] = Array.from(
+              new Map(
+                [...result.skills, ...(refined.skillNames ?? []).map((skill) => ({
+                  skill,
+                  reason: 'Matched from skills API using extracted keywords',
+                }))]
+                  .filter((skill) => skill.skill.trim())
+                  .map((skill) => [skill.skill, skill]),
+              ).values(),
+            )
+
+            result.copyPrompt = refined.prompt
+            result.fullPrompt = refined.prompt
+            result.skills = mergedSkills
+          }
+        } catch {
+          // fall back to deterministic local prompt engine output
+        }
         setPreview(result)
         setSkillBadges(result.skills)
         setToast({
