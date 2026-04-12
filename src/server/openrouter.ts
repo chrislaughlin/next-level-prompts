@@ -218,57 +218,59 @@ async function getSkillCalls(
   return extractSkillNames(skillPayload)
 }
 
-export const polishMissionLineServer = createServerFn({ method: 'POST' })
-  .validator((data: OpenRouterPolishRequest) => data)
-  .handler(async ({ data }) => {
-    const apiKey = getOpenRouterApiKey()
-    if (!apiKey) {
-      throw new Error('Missing OPENROUTER_API_KEY on the server.')
-    }
+export const polishMissionLineServer = createServerFn({
+  method: 'POST',
+}).handler(async ({ data }) => {
+  const payload = data as OpenRouterPolishRequest
+  const apiKey = getOpenRouterApiKey()
+  if (!apiKey) {
+    throw new Error('Missing OPENROUTER_API_KEY on the server.')
+  }
 
-    const generatedPrompt = await runOpenRouterPrompt(
-      apiKey,
-      data.prompt,
-      data.overrides,
-    )
+  const generatedPrompt = await runOpenRouterPrompt(
+    apiKey,
+    payload.prompt,
+    payload.overrides,
+  )
 
-    try {
-      const skillNames = await getSkillCalls(
-        apiKey,
-        data.prompt,
-        generatedPrompt,
-      )
-      return appendSkillCalls(generatedPrompt, skillNames)
-    } catch {
-      return generatedPrompt
-    }
-  })
-
-export const generatePromptWithSkillsServer = createServerFn({ method: 'POST' })
-  .validator((data: PromptPipelineRequest) => data)
-  .handler(async ({ data }) => {
-    const apiKey = getOpenRouterApiKey()
-    if (!apiKey) {
-      throw new Error('Missing OPENROUTER_API_KEY on the server.')
-    }
-
-    const generatedPrompt = await runOpenRouterPrompt(
-      apiKey,
-      buildPromptGenerationInput(data),
-      {
-        max_new_tokens: 700,
-        temperature: 0.25,
-        top_p: 0.9,
-      },
-    )
-
+  try {
     const skillNames = await getSkillCalls(
       apiKey,
-      data.seed,
+      payload.prompt,
       generatedPrompt,
-    ).catch(() => [])
-    return {
-      prompt: appendSkillCalls(generatedPrompt, skillNames),
-      skillNames,
-    }
-  })
+    )
+    return appendSkillCalls(generatedPrompt, skillNames)
+  } catch {
+    return generatedPrompt
+  }
+})
+
+export const generatePromptWithSkillsServer = createServerFn({
+  method: 'POST',
+}).handler(async ({ data }) => {
+  const payload = data as PromptPipelineRequest
+  const apiKey = getOpenRouterApiKey()
+  if (!apiKey) {
+    throw new Error('Missing OPENROUTER_API_KEY on the server.')
+  }
+
+  const generatedPrompt = await runOpenRouterPrompt(
+    apiKey,
+    buildPromptGenerationInput(payload),
+    {
+      max_new_tokens: 700,
+      temperature: 0.25,
+      top_p: 0.9,
+    },
+  )
+
+  const skillNames = await getSkillCalls(
+    apiKey,
+    payload.seed,
+    generatedPrompt,
+  ).catch(() => [])
+  return {
+    prompt: appendSkillCalls(generatedPrompt, skillNames),
+    skillNames,
+  }
+})
