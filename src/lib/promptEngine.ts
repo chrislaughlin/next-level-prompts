@@ -1,4 +1,5 @@
 import { findSkillsFromText } from '../services/skills.ts'
+import { appendOpenRouterSkillCalls } from '../services/openrouterSkills.ts'
 import type { SkillMatch } from '../services/skills.ts'
 
 export type PromptRequest = {
@@ -558,10 +559,14 @@ export async function composePrompt(request: PromptRequest): Promise<PromptSecti
 
   const copyPrompt = promptBlocks.join('\n').trim()
 
+  const promptWithSkillCalls = await appendOpenRouterSkillCalls(seed, copyPrompt, {
+    siteName: 'next-level-prompts',
+  })
+
   return {
     archetype: profile.archetype,
-    copyPrompt,
-    fullPrompt: copyPrompt,
+    copyPrompt: promptWithSkillCalls,
+    fullPrompt: promptWithSkillCalls,
     missingContext,
     assumptions,
     skills,
