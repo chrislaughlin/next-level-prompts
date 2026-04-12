@@ -29,6 +29,8 @@ type PromptPipelineRequest = Pick<
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 const OPENROUTER_MODEL = 'minimax/minimax-m2.5:free'
 const SKILLS_SEARCH_API_URL = 'https://skills.sh/api/search?q='
+const OPENROUTER_TIMEOUT_MS = 25_000
+const SKILLS_SEARCH_TIMEOUT_MS = 7_000
 
 function getOpenRouterApiKey() {
   return (
@@ -106,6 +108,51 @@ function appendSkillCalls(generatedPrompt: string, skillNames: string[]) {
   return `${generatedPrompt}\n\n${suffix}`
 }
 
+function buildPromptFallback(data: PromptPipelineRequest) {
+  const keywords = normalizeInputList(data.keywords)
+  const constraints = normalizeInputList(data.constraints)
+  const verification = normalizeInputList(data.verification)
+  const lines = [
+    `Mission`,
+    `- Create a plan-first coding-agent prompt for: ${data.seed.trim()}`,
+    '',
+    `Context`,
+    keywords.length
+      ? `- Stack/files to prioritize: ${keywords.join(', ')}`
+      : '- Stack/files to prioritize: infer from repository structure first',
+    data.codebaseContext?.trim()
+      ? `- Repository context: ${data.codebaseContext.trim()}`
+      : '- Repository context: not provided; inspect repo to identify the right subsystem',
+    '',
+    `Constraints`,
+    ...(constraints.length
+      ? constraints.map((item) => `- ${item}`)
+      : ['- Keep changes minimal and aligned with existing conventions']),
+    '',
+    `Verification`,
+    ...(verification.length
+      ? verification.map((item) => `- ${item}`)
+      : [
+          '- Run relevant tests, lint, build, and manual checks before completion',
+        ]),
+  ]
+  return lines.join('\n')
+}
+
+async function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init: RequestInit,
+  timeoutMs: number,
+) {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    return await fetch(input, { ...init, signal: controller.signal })
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
 function buildPromptGenerationInput(data: PromptPipelineRequest) {
   const keywords = normalizeInputList(data.keywords)
   const milestones = normalizeInputList(data.milestones)
@@ -146,22 +193,26 @@ async function runOpenRouterPrompt(
   prompt: string,
   overrides?: OpenRouterGenerationHints,
 ) {
-  const response = await fetch(OPENROUTER_API_URL, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-      ...getRefererHeader(),
-      'X-Title': 'Next Level Prompts',
+  const response = await fetchWithTimeout(
+    OPENROUTER_API_URL,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        ...getRefererHeader(),
+        'X-Title': 'Next Level Prompts',
+      },
+      body: JSON.stringify({
+        model: OPENROUTER_MODEL,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: overrides?.temperature ?? 0.4,
+        top_p: overrides?.top_p ?? 0.85,
+        max_tokens: overrides?.max_new_tokens ?? 120,
+      }),
     },
-    body: JSON.stringify({
-      model: OPENROUTER_MODEL,
-      messages: [{ role: 'user', content: prompt }],
-      temperature: overrides?.temperature ?? 0.4,
-      top_p: overrides?.top_p ?? 0.85,
-      max_tokens: overrides?.max_new_tokens ?? 120,
-    }),
-  })
+    OPENROUTER_TIMEOUT_MS,
+  )
 
   if (!response.ok) {
     const errorText = await response.text()
@@ -210,8 +261,10 @@ async function getSkillCalls(
   if (!keywords.length) return []
 
   const searchQuery = encodeURIComponent(keywords.join(' '))
-  const skillSearchResponse = await fetch(
+  const skillSearchResponse = await fetchWithTimeout(
     `${SKILLS_SEARCH_API_URL}${searchQuery}`,
+    {},
+    SKILLS_SEARCH_TIMEOUT_MS,
   )
   if (!skillSearchResponse.ok) return []
   const skillPayload = (await skillSearchResponse.json()) as unknown
@@ -258,11 +311,11 @@ export const generatePromptWithSkillsServer = createServerFn({
     apiKey,
     buildPromptGenerationInput(payload),
     {
-      max_new_tokens: 700,
+      max_new_tokens: 350,
       temperature: 0.25,
       top_p: 0.9,
     },
-  )
+  ).catch(() => buildPromptFallback(payload))
 
   const skillNames = await getSkillCalls(
     apiKey,
