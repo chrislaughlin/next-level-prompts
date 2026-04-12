@@ -1,5 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
+import { composePrompt } from '../lib/promptEngine'
 import type { PromptRequest } from '../lib/promptEngine'
+import { findSkillsFromText } from '../services/skills'
 
 type OpenRouterGenerationHints = {
   max_new_tokens?: number
@@ -12,7 +14,7 @@ type OpenRouterPolishRequest = {
   overrides?: OpenRouterGenerationHints
 }
 
-type PromptPipelineRequest = Pick<
+export type PromptPipelineRequest = Pick<
   PromptRequest,
   | 'seed'
   | 'keywords'
@@ -28,9 +30,9 @@ type PromptPipelineRequest = Pick<
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 const OPENROUTER_MODEL = 'minimax/minimax-m2.5:free'
-const SKILLS_SEARCH_API_URL = 'https://skills.sh/api/search?q='
-const OPENROUTER_TIMEOUT_MS = 25_000
-const SKILLS_SEARCH_TIMEOUT_MS = 7_000
+const OPENROUTER_TIMEOUT_MS = 8_000
+
+type FetchLike = typeof fetch
 
 function getOpenRouterApiKey() {
   return (
@@ -42,19 +44,6 @@ function getRefererHeader() {
   const referer =
     process.env.OPENROUTER_SITE_URL || process.env.VITE_OPENROUTER_SITE_URL
   return referer ? { 'HTTP-Referer': referer } : {}
-}
-
-function normalizeKeywordList(raw: string) {
-  return Array.from(
-    new Set(
-      raw
-        .split(/[\n,]/g)
-        .map((token) => token.trim().toLowerCase())
-        .map((token) => token.replace(/^[^a-z0-9]+|[^a-z0-9- ]+$/g, '').trim())
-        .filter(Boolean)
-        .slice(0, 12),
-    ),
-  )
 }
 
 function normalizeInputList(values?: string[]) {
@@ -73,83 +62,54 @@ function normalizeSkillName(raw: string) {
     .replace(/^-+|-+$/g, '')
 }
 
-function extractSkillNames(payload: unknown) {
-  const records = (() => {
-    if (Array.isArray(payload)) return payload
-    if (!payload || typeof payload !== 'object') return []
-    const obj = payload as Record<string, unknown>
-    if (Array.isArray(obj.skills)) return obj.skills
-    if (Array.isArray(obj.results)) return obj.results
-    if (Array.isArray(obj.data)) return obj.data
-    return []
-  })()
-
-  const names = records
-    .map((record) => {
-      if (typeof record === 'string') return record
-      if (!record || typeof record !== 'object') return ''
-      const obj = record as Record<string, unknown>
-      return (
-        (typeof obj.name === 'string' && obj.name) ||
-        (typeof obj.slug === 'string' && obj.slug) ||
-        (typeof obj.id === 'string' && obj.id) ||
-        ''
-      )
-    })
-    .map(normalizeSkillName)
-    .filter(Boolean)
-
-  return Array.from(new Set(names)).slice(0, 5)
-}
-
 function appendSkillCalls(generatedPrompt: string, skillNames: string[]) {
   if (!skillNames.length) return generatedPrompt
   const suffix = skillNames.map((name) => `/${name}`).join(' ')
   return `${generatedPrompt}\n\n${suffix}`
 }
 
-function buildPromptFallback(data: PromptPipelineRequest) {
-  const keywords = normalizeInputList(data.keywords)
-  const constraints = normalizeInputList(data.constraints)
-  const verification = normalizeInputList(data.verification)
-  const lines = [
-    `Mission`,
-    `- Create a plan-first coding-agent prompt for: ${data.seed.trim()}`,
-    '',
-    `Context`,
-    keywords.length
-      ? `- Stack/files to prioritize: ${keywords.join(', ')}`
-      : '- Stack/files to prioritize: infer from repository structure first',
-    data.codebaseContext?.trim()
-      ? `- Repository context: ${data.codebaseContext.trim()}`
-      : '- Repository context: not provided; inspect repo to identify the right subsystem',
-    '',
-    `Constraints`,
-    ...(constraints.length
-      ? constraints.map((item) => `- ${item}`)
-      : ['- Keep changes minimal and aligned with existing conventions']),
-    '',
-    `Verification`,
-    ...(verification.length
-      ? verification.map((item) => `- ${item}`)
-      : [
-          '- Run relevant tests, lint, build, and manual checks before completion',
-        ]),
-  ]
-  return lines.join('\n')
+function toPromptRequest(payload: PromptPipelineRequest): PromptRequest {
+  return {
+    seed: payload.seed,
+    keywords: payload.keywords,
+    buildMode: payload.buildMode,
+    buildApproach: payload.buildApproach,
+    phaseCount:
+      payload.buildApproach === 'multi-phase' ? payload.phaseCount : undefined,
+    milestones:
+      payload.buildApproach === 'multi-phase' ? payload.milestones : undefined,
+    codebaseContext: payload.codebaseContext,
+    constraints: payload.constraints,
+    verification: payload.verification,
+    nonGoals: payload.nonGoals,
+    multiPhasePreference: 'ask',
+  }
 }
 
 async function fetchWithTimeout(
   input: RequestInfo | URL,
   init: RequestInit,
   timeoutMs: number,
+  fetchFn: FetchLike = fetch,
 ) {
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+  let timeoutId: ReturnType<typeof setTimeout> | null = null
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      controller.abort()
+      reject(new Error(`Request timed out after ${timeoutMs}ms.`))
+    }, timeoutMs)
+  })
+
   try {
-    return await fetch(input, { ...init, signal: controller.signal })
+    return await Promise.race([
+      fetchFn(input, { ...init, signal: controller.signal }),
+      timeoutPromise,
+    ])
   } finally {
-    clearTimeout(timeoutId)
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+    }
   }
 }
 
@@ -192,6 +152,8 @@ async function runOpenRouterPrompt(
   apiKey: string,
   prompt: string,
   overrides?: OpenRouterGenerationHints,
+  fetchFn: FetchLike = fetch,
+  timeoutMs: number = OPENROUTER_TIMEOUT_MS,
 ) {
   const response = await fetchWithTimeout(
     OPENROUTER_API_URL,
@@ -211,7 +173,8 @@ async function runOpenRouterPrompt(
         max_tokens: overrides?.max_new_tokens ?? 120,
       }),
     },
-    OPENROUTER_TIMEOUT_MS,
+    timeoutMs,
+    fetchFn,
   )
 
   if (!response.ok) {
@@ -233,42 +196,97 @@ async function runOpenRouterPrompt(
   return text
 }
 
-async function getSkillCalls(
-  apiKey: string,
-  userPrompt: string,
-  generatedPrompt: string,
+function buildSkillNamesFromTexts(...texts: Array<string | undefined>) {
+  const joined = texts
+    .map((text) => text?.trim())
+    .filter(Boolean)
+    .join(' ')
+  return Array.from(
+    new Set(
+      findSkillsFromText(joined)
+        .map((match) => normalizeSkillName(match.skill))
+        .filter(Boolean),
+    ),
+  ).slice(0, 5)
+}
+
+async function buildLocalPromptResult(payload: PromptPipelineRequest) {
+  const localPrompt = await composePrompt(toPromptRequest(payload))
+  const skillNames = Array.from(
+    new Set(
+      [
+        ...localPrompt.skills.map((skill) => normalizeSkillName(skill.skill)),
+        ...buildSkillNamesFromTexts(
+          payload.seed,
+          payload.codebaseContext,
+          ...(payload.keywords ?? []),
+          ...(payload.constraints ?? []),
+          ...(payload.verification ?? []),
+          ...(payload.nonGoals ?? []),
+          localPrompt.fullPrompt,
+        ),
+      ].filter(Boolean),
+    ),
+  ).slice(0, 5)
+
+  return {
+    prompt: appendSkillCalls(localPrompt.fullPrompt, skillNames),
+    skillNames,
+  }
+}
+
+export async function generatePromptWithSkills(
+  payload: PromptPipelineRequest,
+  options: {
+    apiKey?: string
+    fetchFn?: FetchLike
+    timeoutMs?: number
+  } = {},
 ) {
-  const keywordExtractionPrompt = [
-    'Extract keywords for matching coding-assistant skills.',
-    'Return a comma-separated list with up to 8 concise keywords.',
-    'No explanations and no markdown.',
-    `User prompt: ${userPrompt}`,
-    `Generated prompt: ${generatedPrompt}`,
-    'Keywords:',
-  ].join('\n')
+  const fallbackResult = await buildLocalPromptResult(payload)
+  const apiKey = options.apiKey ?? getOpenRouterApiKey()
 
-  const keywordText = await runOpenRouterPrompt(
-    apiKey,
-    keywordExtractionPrompt,
-    {
-      max_new_tokens: 64,
-      temperature: 0,
-      top_p: 1,
-    },
-  )
+  if (!apiKey) {
+    return fallbackResult
+  }
 
-  const keywords = normalizeKeywordList(keywordText)
-  if (!keywords.length) return []
+  try {
+    const generatedPrompt = await runOpenRouterPrompt(
+      apiKey,
+      buildPromptGenerationInput(payload),
+      {
+        max_new_tokens: 350,
+        temperature: 0.25,
+        top_p: 0.9,
+      },
+      options.fetchFn,
+      options.timeoutMs,
+    )
 
-  const searchQuery = encodeURIComponent(keywords.join(' '))
-  const skillSearchResponse = await fetchWithTimeout(
-    `${SKILLS_SEARCH_API_URL}${searchQuery}`,
-    {},
-    SKILLS_SEARCH_TIMEOUT_MS,
-  )
-  if (!skillSearchResponse.ok) return []
-  const skillPayload = (await skillSearchResponse.json()) as unknown
-  return extractSkillNames(skillPayload)
+    const skillNames = Array.from(
+      new Set(
+        [
+          ...fallbackResult.skillNames,
+          ...buildSkillNamesFromTexts(
+            payload.seed,
+            payload.codebaseContext,
+            ...(payload.keywords ?? []),
+            ...(payload.constraints ?? []),
+            ...(payload.verification ?? []),
+            ...(payload.nonGoals ?? []),
+            generatedPrompt,
+          ),
+        ].filter(Boolean),
+      ),
+    ).slice(0, 5)
+
+    return {
+      prompt: appendSkillCalls(generatedPrompt, skillNames),
+      skillNames,
+    }
+  } catch {
+    return fallbackResult
+  }
 }
 
 export const polishMissionLineServer = createServerFn({
@@ -277,24 +295,19 @@ export const polishMissionLineServer = createServerFn({
   const payload = data as OpenRouterPolishRequest
   const apiKey = getOpenRouterApiKey()
   if (!apiKey) {
-    throw new Error('Missing OPENROUTER_API_KEY on the server.')
+    return payload.prompt
   }
 
-  const generatedPrompt = await runOpenRouterPrompt(
-    apiKey,
-    payload.prompt,
-    payload.overrides,
-  )
-
   try {
-    const skillNames = await getSkillCalls(
+    const generatedPrompt = await runOpenRouterPrompt(
       apiKey,
       payload.prompt,
-      generatedPrompt,
+      payload.overrides,
     )
+    const skillNames = buildSkillNamesFromTexts(payload.prompt, generatedPrompt)
     return appendSkillCalls(generatedPrompt, skillNames)
   } catch {
-    return generatedPrompt
+    return payload.prompt
   }
 })
 
@@ -302,28 +315,5 @@ export const generatePromptWithSkillsServer = createServerFn({
   method: 'POST',
 }).handler(async ({ data }) => {
   const payload = data as PromptPipelineRequest
-  const apiKey = getOpenRouterApiKey()
-  if (!apiKey) {
-    throw new Error('Missing OPENROUTER_API_KEY on the server.')
-  }
-
-  const generatedPrompt = await runOpenRouterPrompt(
-    apiKey,
-    buildPromptGenerationInput(payload),
-    {
-      max_new_tokens: 350,
-      temperature: 0.25,
-      top_p: 0.9,
-    },
-  ).catch(() => buildPromptFallback(payload))
-
-  const skillNames = await getSkillCalls(
-    apiKey,
-    payload.seed,
-    generatedPrompt,
-  ).catch(() => [])
-  return {
-    prompt: appendSkillCalls(generatedPrompt, skillNames),
-    skillNames,
-  }
+  return generatePromptWithSkills(payload)
 })
