@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   Chip,
-  CircularProgress,
   Divider,
   IconButton,
   LinearProgress,
@@ -43,22 +42,6 @@ import {
 import type { BuildApproach, WizardState } from '../lib/wizardState'
 import type { SkillMatch } from '../services/skills'
 import { generatePromptWithSkillsServer } from '../server/openrouter'
-
-type ClientModelModule = {
-  getLastBackend: () => 'openrouter' | null
-  isModelCached: () => Promise<boolean>
-  isWebGPUPreferred: () => boolean
-  prefetchModel: () => Promise<void | null>
-}
-
-let clientModelLoader: Promise<ClientModelModule> | null = null
-
-async function loadClientModel() {
-  if (!clientModelLoader) {
-    clientModelLoader = import('../lib/clientModel')
-  }
-  return clientModelLoader
-}
 
 export const Route = createFileRoute('/')({ component: App })
 
@@ -212,34 +195,11 @@ function App() {
     message: string
     severity: 'success' | 'error'
   }>({ open: false, message: '', severity: 'success' })
-  const [modelStatus, setModelStatus] = useState<
-    'idle' | 'warming' | 'warming-cached' | 'ready' | 'error'
-  >('idle')
-  const [backend, setBackend] = useState<'openrouter' | null>(null)
-  const [webGpuPreferred, setWebGpuPreferred] = useState<boolean | null>(null)
   const [placeholderIndex, setPlaceholderIndex] = useState(() =>
     Math.floor(Math.random() * PLACEHOLDER_IDEAS.length),
   )
   const previewRef = useRef<HTMLDivElement | null>(null)
   const goalRef = useRef<HTMLTextAreaElement | null>(null)
-
-  useEffect(() => {
-    const warmModel = async () => {
-      try {
-        const mod = await loadClientModel()
-        const cached = await mod.isModelCached()
-        setModelStatus(cached ? 'warming-cached' : 'warming')
-        await mod.prefetchModel()
-        setModelStatus('ready')
-        setBackend(mod.getLastBackend())
-        setWebGpuPreferred(mod.isWebGPUPreferred())
-      } catch (err) {
-        console.error(err)
-        setModelStatus('error')
-      }
-    }
-    void warmModel()
-  }, [])
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -802,30 +762,6 @@ function App() {
 
   return (
     <>
-      {(modelStatus === 'warming' || modelStatus === 'warming-cached') && (
-        <Box
-          sx={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 2000,
-            bgcolor: 'rgba(6,2,16,0.94)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 2,
-            textAlign: 'center',
-            color: '#f5f7ff',
-          }}
-        >
-          <CircularProgress color="inherit" size={56} thickness={4} />
-          <Typography variant="h6" fontWeight={700}>
-            Booting Prompt Arcade
-          </Typography>
-        </Box>
-      )}
-
       <Box
         sx={{
           minHeight: '100vh',
@@ -930,7 +866,7 @@ function App() {
 
               <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                 <Chip
-                  label={`Model ${modelStatus}`}
+                  label="Model OpenRouter"
                   sx={{
                     color: '#fff7cc',
                     borderColor: 'rgba(255,243,107,0.72)',
@@ -939,7 +875,7 @@ function App() {
                   variant="outlined"
                 />
                 <Chip
-                  label={`Backend ${backend ?? 'pending'}`}
+                  label="Backend server function"
                   sx={{
                     color: '#d6f2ff',
                     borderColor: 'rgba(22,242,255,0.72)',
@@ -948,13 +884,7 @@ function App() {
                   variant="outlined"
                 />
                 <Chip
-                  label={
-                    webGpuPreferred == null
-                      ? 'Provider readiness unknown'
-                      : webGpuPreferred
-                        ? 'GPU acceleration enabled'
-                        : 'Cloud model route active'
-                  }
+                  label="No local model fallback"
                   sx={{
                     color: '#ffb5ef',
                     borderColor: 'rgba(255,57,212,0.72)',
